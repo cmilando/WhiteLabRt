@@ -33,7 +33,7 @@
 #'   MAX_ITER = as.integer(2000),
 #'   sip = sip,
 #'   NB_maxdelay = as.integer(20),
-#'   window_size = as.integer(6))
+#'   window_size = as.integer(6), chains = 1)
 #'}
 #' @rdname plot.backnow
 #' @import graphics
@@ -44,50 +44,63 @@ plot.backnow <- function(x, plottype, ...){
 
   if(plottype == 'est') {
 
-    plot(x = x$report_date, y = x$report_cases,
+    llx <- x$ll
+
+    ll_df <- as.data.frame(table(llx$report_date))
+
+    plot(x = as.Date(ll_df$Var1),
+         y = ll_df$Freq,
          xlab = 'Date', ylab = 'N. Cases')
 
-    newx <- x$est_back_date
-    lb <- x$est_back[1, ]
-    ub <- x$est_back[3, ]
+    newx <- x$est_df$x
+    lb <- x$est_df$lb
+    ub <- x$est_df$ub
 
     polygon(c(rev(newx), newx), c(rev(ub), lb),
             col = 'grey80', border = NA)
 
-    lines(x = x$est_back_date, y = x$est_back[2, ], col = 'red', lt = '11')
+    lines(x = x$est_df$x, y = x$est_df$med, col='red')
 
-    # plot(out_list_demo2, 'est')
-    # lines(x = out_df$x, y = out_df$med, col='blue')
-    # lines(x = out_df$x, y = out_df$lb, col='green')
-    # lines(x = out_df$x, y = out_df$ub, col='green')
-    #
-    # legend("topright",
-    #        legend = c("Reported cases", "Predicted Onset_new", "Empircal CI",
-    #                   "Predicted Onset_old"),
-    #        col = c("black", "blue", "green", "red"),
-    #        lty = c(NA, 1, 1, 1), # Line types
-    #        pch = c(1, NA, NA, NA), # Point types (1 is a default point type)
-    #        cex = 0.8) # Text size
+    legend("topright",
+           legend = c("Reported cases", "Predicted Onset"),
+           col = c("black", "red"),
+           lty = c(NA, 1), # Line types
+           pch = c(1, NA), # Point types (1 is a default point type)
+           cex = 0.8) # Text size
 
 
   } else {
 
-    plot(x = x$est_rt_date, y = x$est_rt[2,], col = 'white',
-         xlab = 'Date', ylab = 'r(t)')
+    # subset out all zero
+    row_i = 1
+    while(x$rt_df$med[row_i] == 0) {
+      row_i = row_i + 1
+    }
 
-    newx <- x$est_rt_date
-    lb <- x$est_rt[1, ]
-    ub <- x$est_rt[3, ]
+    trunc_df <- x$rt_df[(row_i):nrow(x$rt_df), ]
+
+    plot(x =  trunc_df$x,
+         y =  trunc_df$med, col = 'white',
+         xlab = 'Date', ylab = 'R(t)')
+
+    newx <- trunc_df$x
+    lb <- trunc_df$lb
+    ub <- trunc_df$ub
 
     polygon(c(rev(newx), newx), c(rev(ub), lb),
             col = 'grey80', border = NA)
 
-    lines(x = x$est_rt_date, y = x$est_rt[2, ], col = 'red', lt = '11')
+    lines(x =  trunc_df$x, y =  trunc_df$med,
+          col = 'red', lt = '11')
 
-    # plot(out_list_demo2, 'rt')
-    # lines(x = rt_df$x, y = rt_df$med, col='blue')
-    # lines(x = rt_df$x, y = rt_df$lb, col='green')
-    # lines(x = rt_df$x, y = rt_df$ub, col='green')
+    abline(a = 1, b = 0)
+
+    legend("topright",
+           legend = c("Reported cases", "Predicted R(t)"),
+           col = c("black", "red"),
+           lty = c(NA, 1), # Line types
+           pch = c(1, NA), # Point types (1 is a default point type)
+           cex = 0.8) # Text size
 
   }
 

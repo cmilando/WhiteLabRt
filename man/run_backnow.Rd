@@ -4,46 +4,32 @@
 \alias{run_backnow}
 \title{Run Back Calculation and Estimate Reproduction Numbers}
 \usage{
-run_backnow(input, MAX_ITER, sip, NB_maxdelay, window_size, ...)
+run_backnow(
+  input,
+  sip,
+  MAX_ITER = as.integer(2000),
+  NB_maxdelay = as.integer(20),
+  window_size = as.integer(7),
+  ...
+)
 }
 \arguments{
 \item{input}{A data frame or list that includes epidemic data with either class 'caseCounts'
 or 'lineList'. The input type determines initial processing steps.}
 
+\item{sip}{Vector of numeric values specifying the serial interval probabilities.}
+
 \item{MAX_ITER}{Integer, maximum number of iterations for the back-calculation model.
 Requires at least 2000 iterations; high numbers can significantly increase runtime.}
 
-\item{sip}{Vector of numeric values specifying the serial interval probabilities.}
-
-\item{NB_maxdelay}{Integer, the maximum delay for the right-truncated negative binomial distribution used in modeling.}
+\item{NB_maxdelay}{Integer, the maximum delay for the negative binomial distribution used in modeling.}
 
 \item{window_size}{Integer, the number of days of the R(t) averaging window.}
 
-\item{...}{Additional arguments passed to underlying functions when converting input to the required format.}
+\item{...}{Additional arguments passed to rstan::sampling()}
 }
 \value{
-an object of class \code{backnow} with the following structure
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{ - est_back: back-calculated case counts
-
- - est_back_date: dates for back-calculated case counts
-
- - est_rt: back-calculated R(r)
-
- - est_rt_date: dates for back-calculated R(t)
-
- - report_date: a vector of dates, matches reported_cases
-
- - report_cases: a vector of reported cases
-
- - MAX_ITER: the input for `MAX_ITER`
-
- - NB_maxdelay: the input for `NB_maxdelay`
-
- - si: the input for serial interval `si`
-
- - window_size: the input for `window_size`
-}\if{html}{\out{</div>}}
+an object of class \code{backnow}
 }
 \description{
 This function performs a back-calculation based on provided epidemic case count data,
@@ -70,6 +56,6 @@ results <- run_backnow(
   MAX_ITER = as.integer(2000),
   sip = sip,
   NB_maxdelay = as.integer(20),
-  window_size = as.integer(6))
+  window_size = as.integer(6), chains = 1)
 }
 }

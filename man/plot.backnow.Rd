@@ -45,6 +45,6 @@ results <- run_backnow(
   MAX_ITER = as.integer(2000),
   sip = sip,
   NB_maxdelay = as.integer(20),
-  window_size = as.integer(6))
+  window_size = as.integer(6), chains = 1)
 }
 }

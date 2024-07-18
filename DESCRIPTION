@@ -1,10 +1,13 @@
 Package: WhiteLabRt
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Type: Package
+Title: Novel Methods for Reproduction Number Estimation, Backcalculation, and Forecasting
+Version: 1.0
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    c(person("Chad", "Milando", , "cmilando@bu.edu", role = c("aut", "cre")),
+      person(given = "Tenglong", family = "Li", role = "ctb"),
+      person(given = "Laura", family = "White", role = "ctb"))
+Maintainer: Chad Milando <cmilando@bu.edu>
+Description: A collection of functions related to novel methods for estimating R(t), created by the lab of Professor Laura White.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

@@ -34,4 +34,29 @@ for starters
 
 * https://mc-stan.org/rstantools/articles/minimal-rstan-package.html
 * https://mc-stan.org/rstantools/articles/developer-guidelines.html
-* 
+
+## Current test code
+
+devtools::document()
+devtools::check() 
+devtools::build()
+## R CMD check --as-cran WhiteLabRt_1.0.tar.gz
+devtools::install()
+
+devtools::load_all()
+
+library(WhiteLabRt)
+
+data("sample_onset_dates")
+data("sample_report_dates")
+
+line_list <- create_linelist(sample_report_dates, sample_onset_dates)
+
+sip <- si(14, 4.29, 1.18)
+
+options(mc.cores = 4)
+
+results <- run_backnow(line_list, sip = sip)
+
+plot(results, 'est')
+plot(results, 'rt')

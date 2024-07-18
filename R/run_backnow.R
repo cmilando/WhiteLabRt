@@ -9,31 +9,10 @@
 #' @param MAX_ITER Integer, maximum number of iterations for the back-calculation model.
 #'                 Requires at least 2000 iterations; high numbers can significantly increase runtime.
 #' @param sip Vector of numeric values specifying the serial interval probabilities.
-#' @param NB_maxdelay Integer, the maximum delay for the right-truncated negative binomial distribution used in modeling.
+#' @param NB_maxdelay Integer, the maximum delay for the negative binomial distribution used in modeling.
 #' @param window_size Integer, the number of days of the R(t) averaging window.
-#' @param ... Additional arguments passed to underlying functions when converting input to the required format.
-#' @return an object of class `backnow` with the following structure
-#'
-#'      - est_back: back-calculated case counts
-#'
-#'      - est_back_date: dates for back-calculated case counts
-#'
-#'      - est_rt: back-calculated R(r)
-#'
-#'      - est_rt_date: dates for back-calculated R(t)
-#'
-#'      - report_date: a vector of dates, matches reported_cases
-#'
-#'      - report_cases: a vector of reported cases
-#'
-#'      - MAX_ITER: the input for `MAX_ITER`
-#'
-#'      - NB_maxdelay: the input for `NB_maxdelay`
-#'
-#'      - si: the input for serial interval `si`
-#'
-#'      - window_size: the input for `window_size`
-#'
+#' @param ... Additional arguments passed to rstan::sampling()
+#' @return an object of class `backnow`
 #'
 #' @details The function ensures input data is of the correct class and processes it accordingly.
 #'          It handles different input classes by either converting `caseCounts` to `lineList` or
@@ -54,16 +33,16 @@
 #'   MAX_ITER = as.integer(2000),
 #'   sip = sip,
 #'   NB_maxdelay = as.integer(20),
-#'   window_size = as.integer(6))
+#'   window_size = as.integer(6), chains = 1)
 #'}
 #' @import rstan
 #' @importFrom stats rnbinom aggregate pgamma xtabs quantile
 #' @export
 run_backnow <- function(input,
-                        MAX_ITER,
                         sip,
-                        NB_maxdelay,
-                        window_size,
+                        MAX_ITER = as.integer(2000),
+                        NB_maxdelay = as.integer(20),
+                        window_size = as.integer(7),
                         ...) {
 
   # ---------------------------------------------------------
@@ -240,7 +219,7 @@ run_backnow <- function(input,
   return(structure(class = "backnow",
                    list(est_df        = est_df,
                         rt_df         = rt_df,
-                        out_tally     = out$day_onset_tally_x,
+                        ll = ll,
                         MAX_ITER      = MAX_ITER,
                         NB_maxdelay   = NB_maxdelay,
                         si            = sip,
