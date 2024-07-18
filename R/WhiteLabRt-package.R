@@ -8,10 +8,10 @@
 #' @import methods
 #' @import Rcpp
 #' @import graphics
-#' @importFrom rstan sampling
+#' @importFrom rstan stan
 #' @importFrom rstantools rstan_config
 #' @importFrom RcppParallel RcppParallelLibs
-#' @importFrom stats rnbinom
+#' @importFrom stats rnbinom aggregate pgamma xtabs quantile
 #'
 #' @references
 #' Stan Development Team (NA). RStan: the R interface to Stan. R package version 2.32.6. https://mc-stan.org

@@ -28,11 +28,12 @@
 #' data("sample_location")
 #' data("sample_cases")
 #' case_Counts = create_caseCounts(sample_dates, sample_location, sample_cases)
+#' @importFrom stats rnbinom aggregate pgamma xtabs quantile
 #' @export
 create_caseCounts <- function(date_vec, location_vec, cases_vec) {
 
   # check types
-  stopifnot(all(is.Date(date_vec)))
+  stopifnot(all(! is.na(as.Date(date_vec))))
   stopifnot(all(is.character(location_vec)))
   stopifnot(all(is.numeric(cases_vec)))
 
@@ -40,14 +41,14 @@ create_caseCounts <- function(date_vec, location_vec, cases_vec) {
   stopifnot(all(cases_vec >= 0))
 
   # assumes this is just for one location
-  stopifnot(length(unique(location_vec)) == 1)
+  if(length(unique(location_vec)) > 1) warning('More than 1 location')
 
   # should all have the same length
   stopifnot(length(date_vec) == length(location_vec))
   stopifnot(length(date_vec) == length(cases_vec))
 
   # create caseCounts
-  caseCounts <- data.frame(date = date_vec,
+  caseCounts <- data.frame(date = as.Date(date_vec),
                            cases = cases_vec,
                            location = location_vec)
 

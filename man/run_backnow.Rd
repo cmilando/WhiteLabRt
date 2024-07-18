@@ -4,19 +4,7 @@
 \alias{run_backnow}
 \title{Run Back Calculation and Estimate Reproduction Numbers}
 \usage{
-run_backnow(
-  input,
-  MAX_ITER,
-  norm_sigma,
-  sip,
-  NB_maxdelay,
-  NB_size,
-  n_trunc = NB_size,
-  workerID = NULL,
-  printProgress = 0,
-  preCalcTime = TRUE,
-  ...
-)
+run_backnow(input, MAX_ITER, sip, NB_maxdelay, window_size, ...)
 }
 \arguments{
 \item{input}{A data frame or list that includes epidemic data with either class 'caseCounts'
@@ -25,21 +13,11 @@ or 'lineList'. The input type determines initial processing steps.}
 \item{MAX_ITER}{Integer, maximum number of iterations for the back-calculation model.
 Requires at least 2000 iterations; high numbers can significantly increase runtime.}
 
-\item{norm_sigma}{Numeric, the standard deviation for the normal distribution in the Bayesian framework.}
-
 \item{sip}{Vector of numeric values specifying the serial interval probabilities.}
 
 \item{NB_maxdelay}{Integer, the maximum delay for the right-truncated negative binomial distribution used in modeling.}
 
-\item{NB_size}{Integer, the size parameter for the negative binomial distribution.}
-
-\item{n_trunc}{Integer, the truncation number for the final result matrices (defaults to \code{NB_size}).}
-
-\item{workerID}{Optional integer to specify a worker ID for parallel processing frameworks; defaults to 0.}
-
-\item{printProgress}{Binary integer (0 or 1), specifying whether to print progress to console; affects performance.}
-
-\item{preCalcTime}{Boolean, if TRUE, the function calculates a preliminary runtime estimate before full execution.}
+\item{window_size}{Integer, the number of days of the R(t) averaging window.}
 
 \item{...}{Additional arguments passed to underlying functions when converting input to the required format.}
 }
@@ -47,30 +25,24 @@ Requires at least 2000 iterations; high numbers can significantly increase runti
 an object of class \code{backnow} with the following structure
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{ - est_back: back-calculated case counts
- 
- - est_back_date: dates for back-calculated case counts 
- 
+
+ - est_back_date: dates for back-calculated case counts
+
  - est_rt: back-calculated R(r)
- 
+
  - est_rt_date: dates for back-calculated R(t)
- 
- - geweke_back: Geweke diagnostics for the estimated back-calculation of cases
- 
- - geweke_rt; Geweke diagnostics for R(t)
- 
+
  - report_date: a vector of dates, matches reported_cases
- 
+
  - report_cases: a vector of reported cases
- 
+
  - MAX_ITER: the input for `MAX_ITER`
- 
- - norm_sigma: the input for `norm_sigma`
- 
+
  - NB_maxdelay: the input for `NB_maxdelay`
- 
+
  - si: the input for serial interval `si`
- 
- - NB_size: the input for `NB_size`
+
+ - window_size: the input for `window_size`
 }\if{html}{\out{</div>}}
 }
 \description{
@@ -94,14 +66,10 @@ data("sample_report_dates")
 line_list <- create_linelist(sample_report_dates, sample_onset_dates)
 sip <- si(14, 4.29, 1.18)
 results <- run_backnow(
-  line_list, 
-  MAX_ITER = as.integer(2000), 
-  norm_sigma = 0.5, 
+  line_list,
+  MAX_ITER = as.integer(2000),
   sip = sip,
-  NB_maxdelay = as.integer(20), 
-  NB_size = as.integer(6), 
-  workerID = 1, 
-  printProgress = 1, 
-  preCalcTime = TRUE)
+  NB_maxdelay = as.integer(20),
+  window_size = as.integer(6))
 }
 }

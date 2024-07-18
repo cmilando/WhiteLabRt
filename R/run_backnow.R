@@ -8,14 +8,9 @@
 #'              or 'lineList'. The input type determines initial processing steps.
 #' @param MAX_ITER Integer, maximum number of iterations for the back-calculation model.
 #'                 Requires at least 2000 iterations; high numbers can significantly increase runtime.
-#' @param norm_sigma Numeric, the standard deviation for the normal distribution in the Bayesian framework.
 #' @param sip Vector of numeric values specifying the serial interval probabilities.
 #' @param NB_maxdelay Integer, the maximum delay for the right-truncated negative binomial distribution used in modeling.
-#' @param NB_size Integer, the size parameter for the negative binomial distribution.
-#' @param n_trunc Integer, the truncation number for the final result matrices (defaults to `NB_size`).
-#' @param workerID Optional integer to specify a worker ID for parallel processing frameworks; defaults to 0.
-#' @param printProgress Binary integer (0 or 1), specifying whether to print progress to console; affects performance.
-#' @param preCalcTime Boolean, if TRUE, the function calculates a preliminary runtime estimate before full execution.
+#' @param window_size Integer, the number of days of the R(t) averaging window.
 #' @param ... Additional arguments passed to underlying functions when converting input to the required format.
 #' @return an object of class `backnow` with the following structure
 #'
@@ -27,23 +22,17 @@
 #'
 #'      - est_rt_date: dates for back-calculated R(t)
 #'
-#'      - geweke_back: Geweke diagnostics for the estimated back-calculation of cases
-#'
-#'      - geweke_rt; Geweke diagnostics for R(t)
-#'
 #'      - report_date: a vector of dates, matches reported_cases
 #'
 #'      - report_cases: a vector of reported cases
 #'
 #'      - MAX_ITER: the input for `MAX_ITER`
 #'
-#'      - norm_sigma: the input for `norm_sigma`
-#'
 #'      - NB_maxdelay: the input for `NB_maxdelay`
 #'
 #'      - si: the input for serial interval `si`
 #'
-#'      - NB_size: the input for `NB_size`
+#'      - window_size: the input for `window_size`
 #'
 #'
 #' @details The function ensures input data is of the correct class and processes it accordingly.
@@ -63,39 +52,23 @@
 #' results <- run_backnow(
 #'   line_list,
 #'   MAX_ITER = as.integer(2000),
-#'   norm_sigma = 0.5,
 #'   sip = sip,
 #'   NB_maxdelay = as.integer(20),
-#'   NB_size = as.integer(6),
-#'   workerID = 1,
-#'   printProgress = 1,
-#'   preCalcTime = TRUE)
+#'   window_size = as.integer(6))
 #'}
-#' @importFrom dplyr group_by summarize
+#' @import rstan
+#' @importFrom stats rnbinom aggregate pgamma xtabs quantile
 #' @export
 run_backnow <- function(input,
                         MAX_ITER,
-                        norm_sigma,
                         sip,
                         NB_maxdelay,
-                        NB_size,
-                        n_trunc = NB_size,
-                        workerID = NULL,
-                        printProgress = 0,
-                        preCalcTime = TRUE,...) {
+                        window_size,
+                        ...) {
 
   # ---------------------------------------------------------
   # input checking
-  if(all(c("caseCounts", "lineList") %in% class(input)))    stop()
-  if(all(!(c("caseCounts", "lineList") %in% class(input)))) stop()
-
   input_type <- NA
-  if("caseCounts" %in% class(input)) {
-    input_type = 'caseCounts'
-    # get lineList, with random each time, from ...
-    caseCounts_line <- convert_to_linelist(input, ...)
-  }
-
   if("lineList" %in% class(input)) {
     input_type = 'lineList'
     caseCounts_line <- input
@@ -113,10 +86,6 @@ run_backnow <- function(input,
   stopifnot(MAX_ITER >= 2000)
   if(MAX_ITER >= 30000) warning('`MAX_ITER` >= 30,000 will lead to long run times')
 
-  # norm sigma for bayesian parameters
-  stopifnot(is.numeric(norm_sigma))
-  stopifnot(norm_sigma > 0)
-
   # NB_maxdelay, the maximum of the right truncated distribution
   stopifnot(is.integer(NB_maxdelay))
   stopifnot(NB_maxdelay >= 0)
@@ -127,195 +96,154 @@ run_backnow <- function(input,
   stopifnot(all(is.numeric(sip)))
   stopifnot(all(sip >= 0))
 
-  # size of the NB distribution
-  stopifnot(is.integer(NB_size))
-  stopifnot(NB_size >= 0)
-
-  #
-  if(is.null(workerID)) workerID <- as.integer(0)
-  stopifnot(is.numeric(workerID))
-  workerID <- as.integer(workerID)
-  stopifnot(workerID >= 0)
-
-  #
-  stopifnot(printProgress %in% c(0, 1))
-  if(!dir.exists(file.path(".", "tmp")) & printProgress == 1) {
-    warning("`tmp` dir does not exist, setting printProgress to `0`. Manually create a `tmp` directory in the present folder to view worker specific progress")
-    printProgress <- as.integer(0)
-  }
-  printProgress <- as.integer(printProgress)
-
-  # get min_day, this is how you offset outputs
-  # min_day is the first reporting day of generation 1,
-  # where min_day = 0 would be the infection day of generation 1
-  # essential you can take the min report day and subtract the max report delay
-  infect_date <- min(caseCounts_line$report_date) - NB_maxdelay
+  # R(t) averaging window size
+  stopifnot(is.integer(window_size))
+  stopifnot(window_size >= 0)
 
   # ---------------------------------------------------------
-  # run first to get a time estimate
-  ##
-  if(preCalcTime) {
+  ll <- caseCounts_line
 
-    startup_start_time <- Sys.time()
-    out_list <-
-      backnow_cm(outcome       = caseCounts_line$delay_int,
-                 days          = caseCounts_line$report_int,
-                 week          = caseCounts_line$week_int,
-                 weekend       = caseCounts_line$is_weekend,
-                 workerID      = workerID,
-                 printProgress = as.integer(0),
-                 iter          = 1,
-                 sigma         = norm_sigma,
-                 maxdelay      = NB_maxdelay,
-                 si            = sip,
-                 size          = NB_size)
-    startup_end_time <- Sys.time()
-    startup_elapsed <- difftime(startup_end_time, startup_start_time, units = 'hours')
-    # checks
-    stopifnot(ncol(out_list$Back) == max(caseCounts_line$report_int) + NB_maxdelay)
-    stopifnot(ncol(out_list$R) == max(caseCounts_line$report_int) + NB_maxdelay - NB_size - 1)
-    ##
-    start_time <- Sys.time()
-    out_list <-
-      backnow_cm(outcome       = caseCounts_line$delay_int,
-                 days          = caseCounts_line$report_int,
-                 week          = caseCounts_line$week_int,
-                 weekend       = caseCounts_line$is_weekend,
-                 workerID      = workerID,
-                 printProgress = as.integer(0),
-                 iter          = 100,
-                 sigma         = norm_sigma,
-                 maxdelay      = NB_maxdelay,
-                 si            = sip,
-                 size          = NB_size)
-    end_time <- Sys.time()
-    elapsed <- difftime(end_time, start_time, units = "hours")
-    ##
-    scale_up <- MAX_ITER / 100
-    total_est_time <- startup_elapsed + (elapsed - startup_elapsed) * scale_up
+  ll$value <- 1
+  ll$id <- 1:nrow(ll)
+  ll <- data.frame(ll)
+  Y <- ll$delay_int
 
-    # Use sprintf to format the output
-    formatted_output <- sprintf("Estimated run time: %.2f hours", total_est_time)
-    message(formatted_output)
+  ## THIS SHOULD BE DEFINED BY REPORTING DATE
+  reference_date = as.Date(min(as.Date(ll$report_date), na.rm = T) - 1)
+  ll$report_date_int <- as.vector(ll$report_date - reference_date)
+  ll$onset_date_int <- as.vector(ll$onset_date - reference_date)
 
-  }
+  ## Get daily tally
+  rr <- as.data.frame(table(ll$report_date_int))
+  colnames(rr) = c('report_date_int', 'n')
 
-  # ---------------------------------------------------------
-  # n backnow
+  # Create a wide format table
+  wide_table <- xtabs(~ id + week_int, data = ll)
 
-  out_list <-
-    backnow_cm(outcome       = caseCounts_line$delay_int,
-               days          = caseCounts_line$report_int,
-               week          = caseCounts_line$week_int,
-               weekend       = caseCounts_line$is_weekend,
-               workerID      = workerID,
-               printProgress = printProgress,
-               iter          = MAX_ITER,
-               sigma         = norm_sigma,
-               maxdelay      = NB_maxdelay,
-               si            = sip,
-               size          = NB_size)
-  end_time <- Sys.time()
-  elapsed <- end_time - start_time
+  # Convert xtabs result to a data frame
+  wide_df <- as.data.frame.matrix(wide_table)
 
+  # Add 'week' prefix to column names
+  colnames(wide_df) <- paste0("week", colnames(wide_df))
+  stopifnot(dim(wide_df)[1] == dim(ll)[1])
 
-  # ---------------------------------------------------------
-  # process back-calculation and r(t) across chains
-  # after 1000 burn-in
-  # also every 2 ...
-  N_BURN_IN <- 1000
-  probs_to_export <- c(0.025, 0.5, 0.975)
+  # Merge the wide format table with the original data
+  dt_wide <- cbind(ll[, c('id', 'onset_date_int', 'report_date_int', 'is_weekend')],
+                   wide_df)
 
-  back1  <- out_list$Back[seq(N_BURN_IN + 1, nrow(out_list$Back), by = 2), ]
-  dim(back1)
-
-  # depending on the onset distribution, you may have some NA cols at the tails
-  # replace these with 0s
-  zero_cols <- c()
-  for(j in 1:ncol(back1)) {
-    if(all(is.na(back1[, j]))) zero_cols <- c(j, zero_cols)
-  }
-  if(length(zero_cols) > 0) {
-    back1[, zero_cols] <- 0
-  }
-
-  for(j in 1:ncol(back1)) {
-    if(any(is.na(back1[, j]))) stop("some NA values in `back`")
-  }
-
-  est_back <- apply(back1, 2, function(x) quantile(x, probs = probs_to_export))
-
-  # gewke diagnostics
-  gback1 <- geweke.diag(back1)$z
-  gback1[is.nan(gback1)] <- 0
-  gb1  <- sum(abs(gback1) > 1.96) / length(gback1)
-
-  # ---------------------------------------------------------
-  # process the r(t)
-  r1 <- out_list$R[seq(N_BURN_IN + 1, nrow(out_list$R), by = 2), ]
-  dim(r1)
-
-  # depending onthe onset distribution, you may have some NA cols at the tails
-  # replace these with 0s
-  zero_cols <- c()
-  for(j in 1:ncol(r1)) {
-    if(all(is.na(r1[, j]))) zero_cols <- c(j, zero_cols)
-  }
-  if(length(zero_cols) > 0) {
-    r1[, zero_cols] <- 0
-  }
-
-  for(j in 1:ncol(r1)) {
-    if(any(is.na(r1[, j]))) stop("some NA remains in `r1`")
-  }
+  n_weeks = max(ll$week_int)
 
   ##
-  est_r <- apply(r1, 2, function(x) quantile(x, probs = probs_to_export))
-  dim(est_r)
+  miss_rows <- is.na(dt_wide$onset_date_int)
+  miss_rows2 <- is.na(Y)
+  stopifnot(identical(miss_rows, miss_rows2))
 
-  # gewke diagnostics
-  gr1 <- geweke.diag(r1)$z
-  gr1[is.nan(gr1)] <- 0
-  gr1 <- sum(abs(gr1) > 1.96) / length(gr1)
+  ## CHECK THAT YOU HAVE AT LEAST ONE PERSON PER WEEK
+  # Group by week_int and calculate the required summaries
+  ll$onset_date2 <- ll$onset_date
+  ll$onset_date2[is.na(ll$onset_date2)] <- 0
+  week_check <- aggregate(onset_date2 ~ week_int, data = ll,
+                          FUN = function(x) {
+                            c(n = length(x), n_not_na = sum(!(x == 0)))
+                          })
 
-  # ---------------------------------------------------------
+  # Split the aggregated results into separate columns
+  week_check$n <- week_check$onset_date2[, "n"]
+  week_check$n_not_na <- week_check$onset_date2[, "n_not_na"]
+  week_check$onset_date2 <- NULL
+
+  # Keep the .groups argument equivalent
+  week_check <- week_check[order(week_check$week_int), ]
+
+  # Viewing the week_check
+  for(w_i in 1:nrow(week_check)) {
+    if(week_check$n_not_na[w_i] == 0) {
+      warning(paste0("Week ", w_i, " has no delay data"))
+    }
+  }
+
+
+  ########
+
+  stopifnot(sip[1] == 0)
+
+  stan_data <- list(
+    ##
+    J = as.integer(n_weeks + 1),
+    sipN = as.integer(length(sip)),
+    sip = sip,
+    maxdelay = as.integer(NB_maxdelay),
+    missvector = as.integer(1*miss_rows),
+    ndays = max(dt_wide$report_date_int),
+    windowsize = as.integer(window_size),
+    ##
+    N_obs = as.integer(nrow(dt_wide[!miss_rows, ])),
+    dum_obs = as.matrix(dt_wide[!miss_rows, -c(1:3)]),
+    Y_obs = as.integer(Y[!miss_rows]), ## DELAY
+    ReportOnset = as.integer(unlist(dt_wide[!miss_rows, 2])), ## ONSET
+    ##
+    N_miss = as.integer(nrow(dt_wide[miss_rows, ])),
+    dum_miss = as.matrix(dt_wide[miss_rows, -c(1:3)]),
+    ReportDays = as.integer(unlist(dt_wide[miss_rows, 3]))
+  )
+
+  ########
+
+  mod1 <- rstan::sampling(object = stanmodels$linelist,
+                       data = stan_data, ...)
+
+  ########
+
+  out <- rstan::extract(mod1)
+
+  # dim(out$betas)
+  # apply(out$betas, 2, mean)
   #
-  report_date <- report_int <- NULL
-  output_table <- caseCounts_line %>%
-    group_by(report_date) %>%
-    summarize(.groups = 'keep',
-              n = n())
+  # # any(is.na(out$mu_miss))
+  #
+  # # any(out$day_onset_tally_tail < 1)
+  # # tt <- as.matrix(dt_wide[miss_rows, -c(1:3)]) %*% out$betas[6,]
+  # # dim(tt)
+  #
+  # ########
+  #
+  est_df <- data.frame(
+    x = reference_date + out$day_onset_tally_x[1, ],
+    med = apply(out$day_onset_tally, 2, quantile, probs = 0.5),
+    lb = apply(out$day_onset_tally, 2, quantile, probs = 0.025),
+    ub = apply(out$day_onset_tally, 2, quantile, probs = 0.975)
+  )
+  #
 
-  ## DIM OF EST_BACK = length(report_date) + NB_maxdelay
-  pre <-  seq.Date(min(output_table$report_date) - NB_maxdelay,
-                   min(output_table$report_date) - 1, by = '1 day')
-
-  x_est <- c(pre, output_table$report_date)
-
-  ## DIM OF RT is = length(report_date) + NB_maxdelay - NB_size - 1
-  # but its the last dates
-  rt_size  <- ncol(r1)
-  rt_first <- length(x_est) - rt_size + 1
-  rt_last  <- length(x_est)
-
-  ## TRUNCATE EST_BACK AND EST_R BY N_TRUNC
-  est_back[, ((ncol(est_back) - n_trunc):ncol(est_back))] <- NA
-  est_r[, ((ncol(est_r) - n_trunc):ncol(est_r))] <- NA
-
-
-  return(structure(class = "backnow", list(est_back      = est_back,
-                                    est_back_date = x_est,
-                                    est_rt        = est_r,
-                                    est_rt_date   = x_est[rt_first:rt_last],
-                                    geweke_back   = gb1,
-                                    geweke_rt     = gr1,
-                                    report_date   = output_table$report_date,
-                                    report_cases  = output_table$n,
-                                    MAX_ITER      = MAX_ITER,
-                                    norm_sigma    = norm_sigma,
-                                    NB_maxdelay   = NB_maxdelay,
-                                    si            = sip,
-                                    NB_size       = NB_size)))
-
+  #
+  #
+  # ########
+  # length(out$day_onset_tally_x[1, ]) # ndays + maxdelay
+  # length(out$rt[1,])
+  # # ndays + maxdelay - windowsize - 1
+  #
+  rt_df <- data.frame(
+    x = reference_date + out$day_onset_tally_x[1, ],
+    med = apply(out$rt, 2, quantile, probs = 0.5),
+    lb = apply(out$rt, 2, quantile, probs = 0.025),
+    ub = apply(out$rt, 2, quantile, probs = 0.975)
+  )
+  #
+  # plot(out_list_demo2, 'rt')
+  # lines(x = rt_df$x, y = rt_df$med, col='blue')
+  # lines(x = rt_df$x, y = rt_df$lb, col='green')
+  # lines(x = rt_df$x, y = rt_df$ub, col='green')
+  #
+  #
+  #
+  #
+  return(structure(class = "backnow",
+                   list(est_df        = est_df,
+                        rt_df         = rt_df,
+                        out_tally     = out$day_onset_tally_x,
+                        MAX_ITER      = MAX_ITER,
+                        NB_maxdelay   = NB_maxdelay,
+                        si            = sip,
+                        window_size   = window_size)))
 }
 

@@ -12,6 +12,7 @@
 #'            specified location. If multiple locations are present and `loc` is not specified,
 #'            the function will stop with an error.
 #' @param ... Additional arguments passed to the `plot` function.
+#' @method plot caseCounts
 #' @return a plot object for an object of class `caseCounts`
 #'
 #' @details If the `location` column is present in `x` and contains multiple unique values,

@@ -14,6 +14,7 @@
 #' @param plottype A character string specifying the type of plot to generate. Valid options
 #'                 are 'est' for case estimates and 'rt' for reproduction numbers.
 #' @param ... Additional arguments passed to the plot function.
+#' @method plot backnow
 #' @return a plot object for an object of class `backnow`
 #'
 #' @details Depending on the `plottype`:
@@ -28,52 +29,66 @@
 #' line_list <- create_linelist(sample_report_dates, sample_onset_dates)
 #' sip <- si(14, 4.29, 1.18)
 #' results <- run_backnow(
-#'   line_list, 
-#'   MAX_ITER = as.integer(2000), 
-#'   norm_sigma = 0.5, 
+#'   line_list,
+#'   MAX_ITER = as.integer(2000),
 #'   sip = sip,
-#'   NB_maxdelay = as.integer(20), 
-#'   NB_size = as.integer(6), 
-#'   workerID = 1, 
-#'   printProgress = 1, 
-#'   preCalcTime = TRUE)
-#' plot(results, 'est')
-#' plot(results, 'rt')
+#'   NB_maxdelay = as.integer(20),
+#'   window_size = as.integer(6))
 #'}
 #' @rdname plot.backnow
 #' @import graphics
 #' @export
 plot.backnow <- function(x, plottype, ...){
-  
+
   stopifnot(plottype %in% c('est', 'rt'))
-  
+
   if(plottype == 'est') {
-    
+
     plot(x = x$report_date, y = x$report_cases,
          xlab = 'Date', ylab = 'N. Cases')
-    
+
     newx <- x$est_back_date
     lb <- x$est_back[1, ]
     ub <- x$est_back[3, ]
-    
-    polygon(c(rev(newx), newx), c(rev(ub), lb), 
+
+    polygon(c(rev(newx), newx), c(rev(ub), lb),
             col = 'grey80', border = NA)
-    
+
     lines(x = x$est_back_date, y = x$est_back[2, ], col = 'red', lt = '11')
-    
+
+    # plot(out_list_demo2, 'est')
+    # lines(x = out_df$x, y = out_df$med, col='blue')
+    # lines(x = out_df$x, y = out_df$lb, col='green')
+    # lines(x = out_df$x, y = out_df$ub, col='green')
+    #
+    # legend("topright",
+    #        legend = c("Reported cases", "Predicted Onset_new", "Empircal CI",
+    #                   "Predicted Onset_old"),
+    #        col = c("black", "blue", "green", "red"),
+    #        lty = c(NA, 1, 1, 1), # Line types
+    #        pch = c(1, NA, NA, NA), # Point types (1 is a default point type)
+    #        cex = 0.8) # Text size
+
+
   } else {
-    
+
     plot(x = x$est_rt_date, y = x$est_rt[2,], col = 'white',
          xlab = 'Date', ylab = 'r(t)')
-    
+
     newx <- x$est_rt_date
     lb <- x$est_rt[1, ]
     ub <- x$est_rt[3, ]
-    
-    polygon(c(rev(newx), newx), c(rev(ub), lb), 
+
+    polygon(c(rev(newx), newx), c(rev(ub), lb),
             col = 'grey80', border = NA)
-    
+
     lines(x = x$est_rt_date, y = x$est_rt[2, ], col = 'red', lt = '11')
+
+    # plot(out_list_demo2, 'rt')
+    # lines(x = rt_df$x, y = rt_df$med, col='blue')
+    # lines(x = rt_df$x, y = rt_df$lb, col='green')
+    # lines(x = rt_df$x, y = rt_df$ub, col='green')
+
   }
-  
+
 }

@@ -37,7 +37,7 @@
 #' data("sample_cases")
 #' case_Counts <- create_caseCounts(sample_dates, sample_location, sample_cases)
 #' line_list <- convert_to_linelist(case_Counts)
-#' @importFrom stats rnbinom
+#' @importFrom stats rnbinom aggregate pgamma xtabs
 #' @export
 convert_to_linelist <- function(caseCounts,
                             reportF = NULL,
@@ -50,7 +50,7 @@ convert_to_linelist <- function(caseCounts,
   stopifnot(colnames(caseCounts) %in% necessary_columns)
 
   # check types
-  stopifnot(all(is.Date(caseCounts$date))) # requires(lubridate)
+  stopifnot(all(! is.na(as.Date(caseCounts$date))))
   stopifnot(all(is.character(caseCounts$location)))
   stopifnot(all(is.numeric(caseCounts$cases)))
 
@@ -58,7 +58,7 @@ convert_to_linelist <- function(caseCounts,
   stopifnot(all(caseCounts$cases >= 0))
 
   # assumes this is just for one location
-  stopifnot(length(unique(caseCounts$location)) == 1)
+  if(length(unique(caseCounts$location)) > 1) warning('More than 1 location')
 
   # no is.na
   stopifnot(all(! is.na(caseCounts[, necessary_columns])))
@@ -86,6 +86,7 @@ convert_to_linelist <- function(caseCounts,
     caseCounts$date[rep(i, caseCounts$cases[i])])
 
   report_date_vec <- do.call(c, report_date_l)
+  report_date_vec <- as.Date(report_date_vec)
 
   stopifnot(identical(length(report_date_vec), sum(caseCounts$cases)))
 

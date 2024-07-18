@@ -31,13 +31,14 @@
 #' data("sample_onset_dates")
 #' data("sample_report_dates")
 #' line_list <- create_linelist(sample_report_dates, sample_onset_dates)
+#' @importFrom stats rnbinom aggregate pgamma xtabs quantile
 #' @export
 create_linelist <- function(report_dates, onset_dates) {
 
   # -----------------------------------------------------
   # check types
-  stopifnot(all(is.Date(report_dates)))
-  stopifnot(all(is.Date(onset_dates)))
+  stopifnot(all(! is.na(as.Date(report_dates))))
+  if(any(is.na(as.Date(onset_dates)))) warning("Some onset dates are NA")
 
   # length equal
   stopifnot(length(report_dates) == length(onset_dates))
@@ -63,6 +64,9 @@ create_linelist <- function(report_dates, onset_dates) {
   # -----------------------------------------------------
   # add additional columns
   report_date <- report_int <- NULL
+
+  report_dates <- as.Date(report_dates)
+  onset_dates <- as.Date(onset_dates)
 
   d <- data.frame(report_date = report_dates, onset_date = onset_dates)
 

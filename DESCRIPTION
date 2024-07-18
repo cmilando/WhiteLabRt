@@ -29,3 +29,4 @@ SystemRequirements: GNU make
 Suggests: 
     spelling
 Language: en-US
+LazyData: true

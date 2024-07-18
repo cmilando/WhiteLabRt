@@ -2,17 +2,19 @@
 % Please edit documentation in R/si.R
 \name{si}
 \alias{si}
-\title{Calculate Serial Interval Distribution for COVID-19}
+\title{Calculate a Serial Interval Distribution}
 \usage{
-si(ndays, alpha, beta)
+si(ndays, shape, rate, leading0 = TRUE)
 }
 \arguments{
 \item{ndays}{Integer, the number of days over which to calculate the
 serial interval distribution.}
 
-\item{alpha}{Numeric, the shape parameter of the gamma distribution.}
+\item{shape}{Numeric, the shape parameter of the gamma distribution.}
 
-\item{beta}{Numeric, the rate parameter of the gamma distribution.}
+\item{rate}{Numeric, the rate parameter of the gamma distribution.}
+
+\item{leading0}{Logical, should a leading 0 be added to indicate t0?}
 }
 \value{
 Numeric vector representing the serial interval probabilities
@@ -23,17 +25,15 @@ so that their sum is 1.
 This function computes the probability distribution function (PDF) of the
 serial interval using a gamma distribution with specified
 shape and rate parameters. The serial interval is defined as the time
-between successive cases in a chain of transmission.
-This implementation generates a discrete PDF over a given number of days.
+between successive cases in a chain of transmission. This implementation
+generates a discrete PDF at the \emph{daily} level.
 }
 \details{
 The function uses the \code{pgamma} function to calculate cumulative
 probabilities for each day up to \code{ndays} and then differences these
 to get daily probabilities. The resulting probabilities are normalized to
 sum to 1, ensuring that they represent a valid probability distribution.
-Note: there is \emph{no leading 0} in this implementation.
 }
 \examples{
-sip <- si(14, 4.29, 1.18)
-
+si(ndays = 14, shape = 4.29, rate = 1.18)
 }

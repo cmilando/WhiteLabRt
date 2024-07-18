@@ -41,16 +41,10 @@ data("sample_report_dates")
 line_list <- create_linelist(sample_report_dates, sample_onset_dates)
 sip <- si(14, 4.29, 1.18)
 results <- run_backnow(
-  line_list, 
-  MAX_ITER = as.integer(2000), 
-  norm_sigma = 0.5, 
+  line_list,
+  MAX_ITER = as.integer(2000),
   sip = sip,
-  NB_maxdelay = as.integer(20), 
-  NB_size = as.integer(6), 
-  workerID = 1, 
-  printProgress = 1, 
-  preCalcTime = TRUE)
-plot(results, 'est')
-plot(results, 'rt')
+  NB_maxdelay = as.integer(20),
+  window_size = as.integer(6))
 }
 }
