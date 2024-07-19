@@ -53,9 +53,6 @@ line_list <- create_linelist(sample_report_dates, sample_onset_dates)
 sip <- si(14, 4.29, 1.18)
 results <- run_backnow(
   line_list,
-  MAX_ITER = as.integer(2000),
-  sip = sip,
-  NB_maxdelay = as.integer(20),
-  window_size = as.integer(6), chains = 1)
+  sip = sip,chains = 1)
 }
 }
