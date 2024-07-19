@@ -30,13 +30,11 @@
 #' sip <- si(14, 4.29, 1.18)
 #' results <- run_backnow(
 #'   line_list,
-#'   MAX_ITER = as.integer(2000),
-#'   sip = sip,
-#'   NB_maxdelay = as.integer(20),
-#'   window_size = as.integer(6), chains = 1)
+#'   sip = sip, chains = 1)
 #'}
 #' @rdname plot.backnow
 #' @import graphics
+#' @importFrom grDevices rgb
 #' @export
 plot.backnow <- function(x, plottype, ...){
 
@@ -56,17 +54,20 @@ plot.backnow <- function(x, plottype, ...){
     lb <- x$est_df$lb
     ub <- x$est_df$ub
 
+    polygon_color <- rgb(0.5, 0.5, 0.5, alpha = 0.5) # grey color with 50% transparency
+
     polygon(c(rev(newx), newx), c(rev(ub), lb),
-            col = 'grey80', border = NA)
+            col = polygon_color, border = NA)
 
     lines(x = x$est_df$x, y = x$est_df$med, col='red')
 
     legend("topright",
-           legend = c("Reported cases", "Predicted Onset"),
-           col = c("black", "red"),
-           lty = c(NA, 1), # Line types
-           pch = c(1, NA), # Point types (1 is a default point type)
-           cex = 0.8) # Text size
+           legend = c("Reported cases", "Predicted Onset", "95% eCI"),
+           col = c("black", "red", "grey80"),
+           lty = c(NA, 1, NA), # Line types
+           pch = c(1, NA, 15), # Point types (1 is a default point type)
+           cex = 0.8,
+           pt.cex = 1.5 ) # Text size
 
 
   } else {
@@ -79,28 +80,39 @@ plot.backnow <- function(x, plottype, ...){
 
     trunc_df <- x$rt_df[(row_i):nrow(x$rt_df), ]
 
-    plot(x =  trunc_df$x,
-         y =  trunc_df$med, col = 'white',
-         xlab = 'Date', ylab = 'R(t)')
+    plot(x = trunc_df$x,
+         y = trunc_df$med, col = 'white',
+         xlab = 'Date', ylab = 'R(t)', xaxt = 'n') # Suppress the default x-axis
 
     newx <- trunc_df$x
     lb <- trunc_df$lb
     ub <- trunc_df$ub
 
-    polygon(c(rev(newx), newx), c(rev(ub), lb),
-            col = 'grey80', border = NA)
+    # Define color with transparency
+    polygon_color <- rgb(0.5, 0.5, 0.5, alpha = 0.5) # grey color with 50% transparency
 
-    lines(x =  trunc_df$x, y =  trunc_df$med,
+    polygon(c(rev(newx), newx), c(rev(ub), lb),
+            col = polygon_color, border = NA)
+
+    lines(x = trunc_df$x, y = trunc_df$med,
           col = 'red', lt = '11')
 
-    abline(a = 1, b = 0)
+    abline(a = 1, b = 0, lt = '41')
 
+    # Adding custom x-axis with date format every two weeks
+    axis.Date(1, at = seq(min(trunc_df$x), max(trunc_df$x), by = "2 weeks"), format = "%b %d")
+
+    # Adding legend with better representation for polygon
     legend("topright",
-           legend = c("Reported cases", "Predicted R(t)"),
-           col = c("black", "red"),
-           lty = c(NA, 1), # Line types
-           pch = c(1, NA), # Point types (1 is a default point type)
-           cex = 0.8) # Text size
+           legend = c("Predicted R(t)", "95% eCI"),
+           col = c("red", "grey80"),
+           lty = c(1, NA), # Line types
+           pch = c(NA, 15), # Point types (15 is a filled square)
+           cex = 0.8, # Text size
+           pt.cex = 1.5 # Point size (for the filled square)
+           )
+
+
 
   }
 

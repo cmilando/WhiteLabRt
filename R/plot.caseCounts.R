@@ -28,6 +28,7 @@
 #' plot(case_Counts)
 #' @rdname plot.caseCounts
 #' @import graphics
+#' @importFrom grDevices rgb
 #' @export
 plot.caseCounts <- function(x, loc = NULL, ...){
 

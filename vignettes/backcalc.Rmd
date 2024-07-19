@@ -1,0 +1,126 @@
+---
+title: "Backcalculating Reporting Delays Distributions from Linelist Data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Backcalculating Reporting Delays Distributions from Linelist Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This R Markdown document walks through the steps imputing a reporting delay distribution from linelist data.
+
+There are two starting points for this vignette: either you have **caseCount** data, which are aggregated case counts by day, or you have **Line-list data** means you have a single row for each case, that has dates for: infection, symptom onset, positive test, and when this was reported to public health agencies.
+
+### Example: lineList data
+```{r setup}
+library(WhiteLabRt)
+```
+
+**Step 1.** Load data
+```{r}
+data("sample_report_dates")
+data("sample_onset_dates")
+```
+
+**Step 2.** Creating `linelist` object
+```{r casecounts2}
+my_linelist <- create_linelist(report_dates = sample_report_dates,
+                                onset_dates = sample_onset_dates)
+head(my_linelist)
+```
+
+
+**Step 4.** Define the serial interval.
+The `si()` function creates a vector of length 14 with alpha and beta as defined in Li and White, for COVID-19.
+```{r serial, fig.width=6.75, dev='png'}
+sip <- si(14, 4.29, 1.18)
+plot(sip, type = 'l')
+```
+
+**Step 5.** Run the back-calculation algorithm.
+The defaults are 2000 iterations and an R(t) sliding window of 7 days.
+```{r backcalc1, eval=FALSE}
+options(mc.cores = 4)
+
+out_list_demo <- run_backnow(my_linelist, sip = sip)
+```
+
+**Plot outputs**.
+The points are aggregated reported cases, and the red line (and shaded confidence interval) represent the back-calculated case onsets that lead to the reported data.
+```{r fakeplot, eval=FALSE}
+plot(out_list_demo, "est")
+```
+
+```{r plot1,fig.width=6.75,dev='png',echo=FALSE}
+data("out_list_demo")
+plot(out_list_demo, "est")
+```
+
+You can also plot the `R(t)` curve over time. In this case, the red line (and shaded confidence interval) represent the time-varying r(t). See Li and White for description.
+```{r fakeplot2, eval=FALSE}
+plot(out_list_demo, "rt")
+```
+
+```{r plot2, fig.width=6.75,dev='png',echo=FALSE}
+data("out_list_demo")
+plot(out_list_demo, "rt")
+```
+
+### Example: Case Count data
+You can also do the same from case count data, although at some point you will have to assume a reporting delay distribution, so this would be a little circular.
+
+**Step 1.** Load data
+```{r example1}
+data("sample_dates")
+data("sample_location")
+data("sample_cases")
+
+head(sample_dates)
+head(sample_cases)
+head(sample_location)
+```
+
+**Step 2.** Creating case-counts
+```{r casecounts}
+caseCounts <- create_caseCounts(date_vec = sample_dates,
+                                location_vec = sample_location,
+                                cases_vec = sample_cases)
+head(caseCounts)
+```
+
+**Step 3.** Convert to linelist data.
+You can specify the distribution for `my_linelist` in  `convert_to_linelist`. `reportF` is the distribution function, `_args` lists the distribution params that are not `x`, and `_missP` is the percent missing. This must be between ${0 < x < 1}$. Both 'caseCounts' and 'caseCounts_line' objects can be fed into `run_backnow`. The implied onset distribution is `rnbinom()` with `size = 3` and `mu = 9`, with `reportF_missP = 0.6` .
+```{r}
+my_linelist <- convert_to_linelist(caseCounts, 
+                                   reportF = rnbinom, 
+                                   reportF_args = list(size = 3, mu = 9),
+                                   reportF_missP = 0.6)
+head(my_linelist)
+```
+
+**Step 4.** Define the serial interval.
+The `si()` function creates a vector of length 14 with alpha and beta as defined in Li and White, for COVID-19.
+```{r serial2,fig.width=6.75, dev='png'}
+sip <- si(14, 4.29, 1.18)
+```
+
+**Step 5.** Run the back-calculation algorithm.
+The defaults are 2000 iterations and an R(t) sliding window of 7 days.
+```{r backcalc2, eval=FALSE}
+options(mc.cores = 4)
+
+out_list_demo <- run_backnow(my_linelist, sip = sip)
+```
+
+
+
+
+
+

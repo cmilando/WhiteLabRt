@@ -30,10 +30,7 @@
 #' sip <- si(14, 4.29, 1.18)
 #' results <- run_backnow(
 #'   line_list,
-#'   MAX_ITER = as.integer(2000),
-#'   sip = sip,
-#'   NB_maxdelay = as.integer(20),
-#'   window_size = as.integer(6), chains = 1)
+#'   sip = sip,chains = 1)
 #'}
 #' @import rstan
 #' @importFrom stats rnbinom aggregate pgamma xtabs quantile
@@ -175,50 +172,32 @@ run_backnow <- function(input,
 
   out <- rstan::extract(mod1)
 
-  # dim(out$betas)
-  # apply(out$betas, 2, mean)
-  #
-  # # any(is.na(out$mu_miss))
-  #
-  # # any(out$day_onset_tally_tail < 1)
-  # # tt <- as.matrix(dt_wide[miss_rows, -c(1:3)]) %*% out$betas[6,]
-  # # dim(tt)
-  #
+  if(any(is.na(out$mu_miss))) warning('Some missing MU_MISS!')
+
   # ########
-  #
+
   est_df <- data.frame(
     x = reference_date + out$day_onset_tally_x[1, ],
     med = apply(out$day_onset_tally, 2, quantile, probs = 0.5),
     lb = apply(out$day_onset_tally, 2, quantile, probs = 0.025),
     ub = apply(out$day_onset_tally, 2, quantile, probs = 0.975)
   )
-  #
 
-  #
-  #
   # ########
-  # length(out$day_onset_tally_x[1, ]) # ndays + maxdelay
-  # length(out$rt[1,])
-  # # ndays + maxdelay - windowsize - 1
-  #
+
   rt_df <- data.frame(
     x = reference_date + out$day_onset_tally_x[1, ],
     med = apply(out$rt, 2, quantile, probs = 0.5),
     lb = apply(out$rt, 2, quantile, probs = 0.025),
     ub = apply(out$rt, 2, quantile, probs = 0.975)
   )
-  #
-  # plot(out_list_demo2, 'rt')
-  # lines(x = rt_df$x, y = rt_df$med, col='blue')
-  # lines(x = rt_df$x, y = rt_df$lb, col='green')
-  # lines(x = rt_df$x, y = rt_df$ub, col='green')
-  #
-  #
-  #
-  #
+
+  # ########
+
   return(structure(class = "backnow",
                    list(est_df        = est_df,
                         rt_df         = rt_df,
+                        betas = apply(out$betas, 2, mean),
                         ll = ll,
                         MAX_ITER      = MAX_ITER,
                         NB_maxdelay   = NB_maxdelay,

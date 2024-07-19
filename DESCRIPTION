@@ -30,6 +30,9 @@ LinkingTo:
     StanHeaders (>= 2.18.0)
 SystemRequirements: GNU make
 Suggests: 
+    knitr,
+    rmarkdown,
     spelling
 Language: en-US
 LazyData: true
+VignetteBuilder: knitr

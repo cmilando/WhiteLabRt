@@ -59,3 +59,15 @@
 #'
 #'
 "sample_onset_dates"
+
+#' Out demo
+#'
+#' "Description in text"
+#'
+#' @format A data.table data frame with X rows and Y variables:
+#' \describe{
+#' \item{Variable}{Description}
+#' }
+#'
+#'
+"out_list_demo"
