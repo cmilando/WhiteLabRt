@@ -82,7 +82,7 @@ plot.backnow <- function(x, plottype, ...){
 
     plot(x = trunc_df$x,
          y = trunc_df$med, col = 'white',
-         xlab = 'Date', ylab = 'R(t)', xaxt = 'n') # Suppress the default x-axis
+         xlab = 'Date', ylab = 'R(t)') #, xaxt = 'n') # Suppress the default x-axis
 
     newx <- trunc_df$x
     lb <- trunc_df$lb
@@ -100,7 +100,8 @@ plot.backnow <- function(x, plottype, ...){
     abline(a = 1, b = 0, lt = '41')
 
     # Adding custom x-axis with date format every two weeks
-    axis.Date(1, at = seq(min(trunc_df$x), max(trunc_df$x), by = "2 weeks"), format = "%b %d")
+    # axis.Date(1, at = seq(min(trunc_df$x), max(trunc_df$x), by = "2 weeks"),
+    #           format = "%b %d")
 
     # Adding legend with better representation for polygon
     legend("topright",

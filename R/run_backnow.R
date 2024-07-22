@@ -6,8 +6,6 @@
 #'
 #' @param input A data frame or list that includes epidemic data with either class 'caseCounts'
 #'              or 'lineList'. The input type determines initial processing steps.
-#' @param MAX_ITER Integer, maximum number of iterations for the back-calculation model.
-#'                 Requires at least 2000 iterations; high numbers can significantly increase runtime.
 #' @param sip Vector of numeric values specifying the serial interval probabilities.
 #' @param NB_maxdelay Integer, the maximum delay for the negative binomial distribution used in modeling.
 #' @param window_size Integer, the number of days of the R(t) averaging window.
@@ -24,20 +22,13 @@
 #'
 #' @examples
 #'\donttest{
-#' data("sample_onset_dates")
-#' data("sample_report_dates")
-#' line_list <- create_linelist(sample_report_dates, sample_onset_dates)
-#' sip <- si(14, 4.29, 1.18)
-#' results <- run_backnow(
-#'   line_list,
-#'   sip = sip,chains = 1)
+
 #'}
 #' @import rstan
 #' @importFrom stats rnbinom aggregate pgamma xtabs quantile
 #' @export
 run_backnow <- function(input,
                         sip,
-                        MAX_ITER = as.integer(2000),
                         NB_maxdelay = as.integer(20),
                         window_size = as.integer(7),
                         ...) {
@@ -56,11 +47,6 @@ run_backnow <- function(input,
   cond1 <- length(which_na) == 0
   cond2 <- length(which_na) == nrow(caseCounts_line)
   if(cond1 | cond2) stop("delay INTS must have some missing data.")
-
-  # maxiter checks
-  stopifnot(is.integer(MAX_ITER))
-  stopifnot(MAX_ITER >= 2000)
-  if(MAX_ITER >= 30000) warning('`MAX_ITER` >= 30,000 will lead to long run times')
 
   # NB_maxdelay, the maximum of the right truncated distribution
   stopifnot(is.integer(NB_maxdelay))
@@ -199,7 +185,6 @@ run_backnow <- function(input,
                         rt_df         = rt_df,
                         betas = apply(out$betas, 2, mean),
                         ll = ll,
-                        MAX_ITER      = MAX_ITER,
                         NB_maxdelay   = NB_maxdelay,
                         si            = sip,
                         window_size   = window_size)))

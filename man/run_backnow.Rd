@@ -7,7 +7,6 @@
 run_backnow(
   input,
   sip,
-  MAX_ITER = as.integer(2000),
   NB_maxdelay = as.integer(20),
   window_size = as.integer(7),
   ...
@@ -18,9 +17,6 @@ run_backnow(
 or 'lineList'. The input type determines initial processing steps.}
 
 \item{sip}{Vector of numeric values specifying the serial interval probabilities.}
-
-\item{MAX_ITER}{Integer, maximum number of iterations for the back-calculation model.
-Requires at least 2000 iterations; high numbers can significantly increase runtime.}
 
 \item{NB_maxdelay}{Integer, the maximum delay for the negative binomial distribution used in modeling.}
 
@@ -47,12 +43,5 @@ with diagnostic statistics.
 }
 \examples{
 \donttest{
-data("sample_onset_dates")
-data("sample_report_dates")
-line_list <- create_linelist(sample_report_dates, sample_onset_dates)
-sip <- si(14, 4.29, 1.18)
-results <- run_backnow(
-  line_list,
-  sip = sip,chains = 1)
 }
 }

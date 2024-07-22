@@ -71,3 +71,27 @@
 #'
 #'
 "out_list_demo"
+
+#' Sample multi site
+#'
+#' "Description in text"
+#'
+#' @format A data.table data frame with X rows and Y variables:
+#' \describe{
+#' \item{Variable}{Description}
+#' }
+#'
+#'
+"sample_multi_site"
+
+#' transfer_matrix
+#'
+#' "Description in text"
+#'
+#' @format A data.table data frame with X rows and Y variables:
+#' \describe{
+#' \item{Variable}{Description}
+#' }
+#'
+#'
+"transfer_matrix"

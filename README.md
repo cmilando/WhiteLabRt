@@ -29,12 +29,29 @@ for starters
 
 ### Devtools reminders
 
+# to update stan docs you may have to do
+(1) change stan
+(2) rstantools::rstan_config()
+(3) devtools::load_all()
+
+
 # for larger changes
 devtools::document()
 devtools::check() 
-devtools::build()
-## R CMD check --as-cran WhiteLabRt_1.0.tar.gz
+#devtools::build()
 devtools::install()
+
+
+devtools::document()
+devtools::build()
+devtools::install(upgrade = "never")
+devtools::run_examples()
+devtools::test()
+devtools::build_vignettes() 
+devtools::check(cran=TRUE)
+
+## For checking on CRAN
+## R CMD check --as-cran WhiteLabRt_1.0.tar.gz
 
 # 
 devtools::build_vignettes()
@@ -42,6 +59,15 @@ browseVignettes('WhiteLabRt')
 
 # for quick hits
 devtools::load_all()
+
+## dontest for run_backnow
+#' data("sample_onset_dates")
+#' data("sample_report_dates")
+#' line_list <- create_linelist(sample_report_dates, sample_onset_dates)
+#' sip <- si(14, 4.29, 1.18)
+#' results <- run_backnow(
+#'   line_list,
+#'   sip = sip,chains = 1)
 
 
 ### current errors during R CMD CHECK

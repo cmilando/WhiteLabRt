@@ -6,9 +6,9 @@
 \usage{
 convert_to_linelist(
   caseCounts,
+  reportF_missP,
   reportF = NULL,
-  reportF_args = NULL,
-  reportF_missP = NULL
+  reportF_args = NULL
 )
 }
 \arguments{
@@ -19,15 +19,15 @@ The data frame must meet several criteria:
 - Case numbers must be non-negative integers.
 - No missing values are allowed in the necessary columns.}
 
+\item{reportF_missP}{A numeric probability between 0 and 1 (exclusive) indicating the
+proportion of missing onset dates. It throws an error if it is out
+of bounds or not numeric.}
+
 \item{reportF}{A function used to simulate the delay from case reporting to case onset.
 Defaults to a negative binomial distribution function (\code{rnbinom}) if NULL.}
 
 \item{reportF_args}{A list of additional arguments to pass to \code{reportF}.
 Defaults to \code{list(size = 3, mu = 9)} when \code{reportF} is NULL.}
-
-\item{reportF_missP}{A numeric probability between 0 and 1 (exclusive) indicating the
-proportion of missing onset dates. It throws an error if it is out
-of bounds or not numeric.}
 }
 \value{
 A data frame in line list format, where each row corresponds to a case report.
@@ -54,5 +54,5 @@ data("sample_dates")
 data("sample_location")
 data("sample_cases")
 case_Counts <- create_caseCounts(sample_dates, sample_location, sample_cases)
-line_list <- convert_to_linelist(case_Counts)
+line_list <- convert_to_linelist(case_Counts, reportF_missP = 0.5)
 }

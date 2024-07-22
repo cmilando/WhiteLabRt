@@ -36,13 +36,12 @@
 #' data("sample_location")
 #' data("sample_cases")
 #' case_Counts <- create_caseCounts(sample_dates, sample_location, sample_cases)
-#' line_list <- convert_to_linelist(case_Counts)
+#' line_list <- convert_to_linelist(case_Counts, reportF_missP = 0.5)
 #' @importFrom stats rnbinom aggregate pgamma xtabs
 #' @export
-convert_to_linelist <- function(caseCounts,
+convert_to_linelist <- function(caseCounts,reportF_missP,
                             reportF = NULL,
-                            reportF_args = NULL,
-                            reportF_missP = NULL) {
+                            reportF_args = NULL) {
 
   # ---------------------------------------
   # validate caseCounts
@@ -64,6 +63,7 @@ convert_to_linelist <- function(caseCounts,
   stopifnot(all(! is.na(caseCounts[, necessary_columns])))
 
   # reportMissP must be 0 < x < 1
+
   if(!is.null(reportF_missP)) {
     stopifnot(is.numeric(reportF_missP))
     stopifnot(0 < reportF_missP & reportF_missP < 1)
@@ -88,7 +88,7 @@ convert_to_linelist <- function(caseCounts,
   report_date_vec <- do.call(c, report_date_l)
   report_date_vec <- as.Date(report_date_vec)
 
-  stopifnot(identical(length(report_date_vec), sum(caseCounts$cases)))
+  stopifnot(length(report_date_vec) == sum(caseCounts$cases))
 
   # ---------------------------------------
   ## now add other columns
