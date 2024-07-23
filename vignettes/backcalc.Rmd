@@ -46,29 +46,18 @@ plot(sip, type = 'l')
 
 **Step 5.** Run the back-calculation algorithm.
 The defaults are 2000 iterations and an R(t) sliding window of 7 days.
-```{r backcalc1, eval=FALSE}
-options(mc.cores = 4)
-
-out_list_demo <- run_backnow(my_linelist, sip = sip)
+```{r backcalc1}
+out_list_demo <- run_backnow(my_linelist, sip = sip, chains = 1)
 ```
 
 **Plot outputs**.
 The points are aggregated reported cases, and the red line (and shaded confidence interval) represent the back-calculated case onsets that lead to the reported data.
-```{r fakeplot, eval=FALSE}
-plot(out_list_demo, "est")
-```
-
-```{r plot1,fig.width=6.75,dev='png',echo=FALSE}
-data("out_list_demo")
+```{r plot1,fig.width=6.75,dev='png'}
 plot(out_list_demo, "est")
 ```
 
 You can also plot the `R(t)` curve over time. In this case, the red line (and shaded confidence interval) represent the time-varying r(t). See Li and White for description.
-```{r fakeplot2, eval=FALSE}
-plot(out_list_demo, "rt")
-```
-
-```{r plot2, fig.width=6.75,dev='png',echo=FALSE}
+```{r plot2, fig.width=6.75,dev='png'}
 data("out_list_demo")
 plot(out_list_demo, "rt")
 ```

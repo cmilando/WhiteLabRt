@@ -22,7 +22,13 @@
 #'
 #' @examples
 #'\donttest{
-
+#' data("sample_onset_dates")
+#' data("sample_report_dates")
+#' line_list <- create_linelist(sample_report_dates, sample_onset_dates)
+#' sip <- si(14, 4.29, 1.18)
+#' results <- run_backnow(
+#'   line_list,
+#'   sip = sip, chains = 1)
 #'}
 #' @import rstan
 #' @importFrom stats rnbinom aggregate pgamma xtabs quantile

@@ -37,14 +37,14 @@ The serial interval for this **CANNOT** start with a leading 0.
 sip <- si(14, 4.29, 1.18, leading0 = FALSE)
 ```
 
-```{r,eval=FALSE}
+```{r runspatialrt}
 sample_m_hier <- spatialRt(report_dates = sample_multi_site$date,
                  case_matrix = Y,
                  transfer_matrix = transfer_matrix,
                  v2 = FALSE,
                  sip = sip, chains = 1)
 ```
-```{r, eval=FALSE}
+```{r}
 rstan::check_divergences(sample_m_hier)
 rstan::check_hmc_diagnostics(sample_m_hier)
 
@@ -53,15 +53,6 @@ out <- rstan::extract(sample_m_hier)
 # launch_shinystan(m_hier)
 ```
 
-```{r, echo=FALSE}
-data("sample_m_hier")
-rstan::check_divergences(sample_m_hier)
-rstan::check_hmc_diagnostics(sample_m_hier)
-
-out <- rstan::extract(sample_m_hier)
-# QC
-# launch_shinystan(m_hier)
-```
 
 ```{r}
 dim(out$M)
@@ -119,7 +110,7 @@ plot(
 
 for (region_i in regions) {
   region_data <- subset(data_all_summarise, region == region_i)
-  points(x = region_data$x, region_data$y, col = colors[region_i])
+  points(x = region_data$x, region_data$y_real, col = colors[region_i])
   polygon(
     c(region_data$x, rev(region_data$x)), 
     c(region_data$yl, rev(region_data$yh)), 
