@@ -14,7 +14,20 @@
 #'
 #' @examples
 #'\donttest{
-#' print("duh")
+#' data("sample_multi_site")
+#' data("transfer_matrix")
+#' Y <- as.matrix(sample_multi_site[, c(2, 3)])
+#' for(i in 1:nrow(Y)) {
+#'   for(j in 1:ncol(Y)) {
+#'     Y[i,j] <- as.integer(Y[i,j])
+#'   }
+#' }
+#' sip <- si(14, 4.29, 1.18, leading0 = FALSE)
+#' sample_m_hier <- spatialRt(report_dates = sample_multi_site$date,
+#' case_matrix = Y,
+#' transfer_matrix = transfer_matrix,
+#' v2 = FALSE,
+#' sip = sip, chains = 1)
 #'}
 #' @import rstan
 #' @importFrom stats rnbinom aggregate pgamma xtabs quantile
@@ -97,6 +110,8 @@ spatialRt <- function(report_dates, case_matrix, transfer_matrix,
                        ...)
 
   }
+
+  # ----------------------------------------------------
 
   return(m_hier)
 

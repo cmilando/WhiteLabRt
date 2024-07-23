@@ -29,7 +29,7 @@ using namespace stan::math;
 stan::math::profile_map profiles__;
 static constexpr std::array<const char*, 70> locations_array__ =
   {" (found before start of program)",
-  " (in 'stan_sliding_v4', line 13, column 2 to column 31)",
+  " (in 'stan_sliding_v4', line 13, column 2 to column 34)",
   " (in 'stan_sliding_v4', line 14, column 2 to column 21)",
   " (in 'stan_sliding_v4', line 15, column 2 to column 20)",
   " (in 'stan_sliding_v4', line 18, column 2 to column 16)",
@@ -87,7 +87,7 @@ static constexpr std::array<const char*, 70> locations_array__ =
   " (in 'stan_sliding_v4', line 9, column 2 to column 14)",
   " (in 'stan_sliding_v4', line 10, column 9 to column 10)",
   " (in 'stan_sliding_v4', line 10, column 2 to column 23)",
-  " (in 'stan_sliding_v4', line 13, column 21 to column 22)",
+  " (in 'stan_sliding_v4', line 13, column 24 to column 25)",
   " (in 'stan_sliding_v4', line 14, column 9 to column 11)",
   " (in 'stan_sliding_v4', line 14, column 12 to column 13)",
   " (in 'stan_sliding_v4', line 15, column 9 to column 11)",
@@ -340,7 +340,7 @@ public:
         Eigen::Matrix<local_scalar_t__,-1,1>::Constant(J, DUMMY_VAR__);
       current_statement__ = 1;
       xsigma = in__.template read_constrain_lb<
-                 Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0.01,
+                 Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0.00001,
                  lp__, J);
       Eigen::Matrix<local_scalar_t__,-1,-1> xbeta =
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(NW, J, DUMMY_VAR__);
@@ -519,7 +519,7 @@ public:
           std::numeric_limits<double>::quiet_NaN());
       current_statement__ = 1;
       xsigma = in__.template read_constrain_lb<
-                 Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0.01,
+                 Eigen::Matrix<local_scalar_t__,-1,1>, jacobian__>(0.00001,
                  lp__, J);
       Eigen::Matrix<double,-1,-1> xbeta =
         Eigen::Matrix<double,-1,-1>::Constant(NW, J,
@@ -664,7 +664,7 @@ public:
       stan::model::assign(xsigma,
         in__.read<Eigen::Matrix<local_scalar_t__,-1,1>>(J),
         "assigning variable xsigma");
-      out__.write_free_lb(0.01, xsigma);
+      out__.write_free_lb(0.00001, xsigma);
       Eigen::Matrix<local_scalar_t__,-1,-1> xbeta =
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(NW, J, DUMMY_VAR__);
       current_statement__ = 2;
@@ -722,7 +722,7 @@ public:
           pos__ = (pos__ + 1);
         }
       }
-      out__.write_free_lb(0.01, xsigma);
+      out__.write_free_lb(0.00001, xsigma);
       Eigen::Matrix<local_scalar_t__,-1,-1> xbeta =
         Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(NW, J, DUMMY_VAR__);
       {

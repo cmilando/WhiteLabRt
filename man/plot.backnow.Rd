@@ -43,5 +43,6 @@ sip <- si(14, 4.29, 1.18)
 results <- run_backnow(
   line_list,
   sip = sip, chains = 1)
+plot(results, "est")
 }
 }

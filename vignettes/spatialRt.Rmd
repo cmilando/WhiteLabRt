@@ -32,99 +32,134 @@ for(i in 1:nrow(Y)) {
 }
 ```
 
+The serial interval for this **CANNOT** start with a leading 0.
 ```{r}
 sip <- si(14, 4.29, 1.18, leading0 = FALSE)
 ```
 
-```{r}
-m_hier <- spatialRt(report_dates = sample_multi_site$date,
+```{r,eval=FALSE}
+sample_m_hier <- spatialRt(report_dates = sample_multi_site$date,
                  case_matrix = Y,
                  transfer_matrix = transfer_matrix,
-                 v2 = TRUE,
+                 v2 = FALSE,
                  sip = sip, chains = 1)
 ```
-```{r}
-rstan::check_divergences(m_hier)
-rstan::check_hmc_diagnostics(m_hier)
+```{r, eval=FALSE}
+rstan::check_divergences(sample_m_hier)
+rstan::check_hmc_diagnostics(sample_m_hier)
 
-out <- rstan::extract(out)
+out <- rstan::extract(sample_m_hier)
+# QC
+# launch_shinystan(m_hier)
+```
+
+```{r, echo=FALSE}
+data("sample_m_hier")
+rstan::check_divergences(sample_m_hier)
+rstan::check_hmc_diagnostics(sample_m_hier)
+
+out <- rstan::extract(sample_m_hier)
 # QC
 # launch_shinystan(m_hier)
 ```
 
 ```{r}
-# -------------------------------------------------------------
-# get actual data
 dim(out$M)
 dim(out$xsigma)
 
-## CHANCGE THIS TO BE BY CHAIN
-library(matrixStats)
-data_l <- lapply(1:2, function(i) {
-
+data_l <- lapply(1:dim(out$M)[3], function(i) {
   data.frame(
-    ##
-    x      = 1:nrow(R_this),
-    y_real = N[,i],
-    R_back = R_this[, i], ## R_this is the backcalcualted, Rmatrix is true
-    R_real = Rmatrix[, i],
-    ##
-    y      = colMeans(out$M[, , i]),
-    yl     = colQuantiles(out$M[, , i],probs=c(0.025)),
-    yh     = colQuantiles(out$M[, , i],probs=c(0.975)),
-    ##
-    Rt     = colMeans(out$R[ , ,i]),
-    Rtl    = colQuantiles(out$R[, ,i],probs=c(0.025)),
-    Rth    = colQuantiles(out$R[, ,i],probs=c(0.975)),
-    #
+    x      = 1:dim(out$M)[2],
+    y_real = Y[, i],
+    y      = apply(out$M[, , i], 2, mean),
+    yl     = apply(out$M[, , i], 2, quantile, probs = 0.025),
+    yh     = apply(out$M[, , i], 2, quantile, probs = 0.975),
+    Rt     = apply(out$R[, , i], 2, mean),
+    Rtl    = apply(out$R[, , i], 2, quantile, probs = 0.025),
+    Rth    = apply(out$R[, , i], 2, quantile, probs = 0.975),
     region = i
   )
-  
 })
 
 data_all <- do.call(rbind, data_l)
 head(data_all)
 
-#data_grouped <- data_all %>% group_by(., x, region, chain)
-library(tidyverse)
-data_all_summarise <- data_all  %>% 
-  mutate(region = paste0('region: ', region)) %>%
-  group_by(x, region) %>%
-  summarise(.groups = 'keep',
-            y_mean = mean(y),
-            y_real = mean(y_real),
-            Rt_back = mean(R_back),
-            Rt_real = mean(R_real),
-            yl = mean(yl),
-            yh = mean(yh),
-            Rt_mean = mean(Rt),
-            Rtl = mean(Rtl),
-            Rth = mean(Rth))
+# Summarise data
+data_all$region <- paste0('region: ', data_all$region)
 
-### plot exepected cases
-p1 <- ggplot(data_all_summarise) +
-  geom_ribbon(aes(x = x,ymin=yl,ymax=yh, fill = region), alpha=0.3) + 
-  geom_line(aes(y = y_mean, x = x, color = region), linewidth = 0.5) +
-  geom_line(aes(y = y_real, x = x, group = region), color = 'black', linewidth = 0.25) +
-  theme_classic() +  xlab("Days") + ylab('Cases') + 
-  #facet_rep_wrap(~region, nrow = 3, scales = 'free_y') + 
-  theme(strip.background = element_blank())
+data_all_summarise <- aggregate(
+  cbind(y, y_real, yl, yh, Rt, Rtl, Rth) ~ x + region,
+  data = data_all,
+  FUN = mean
+)
 
-# plot R(t)
-p2 <- ggplot(data_all_summarise, aes(x = x, color = region)) +
-  geom_ribbon(aes(x = x,ymin=Rtl,ymax=Rth, fill = region), alpha=0.3) + 
-  geom_line(aes(y=Rt_mean,x=x, color = region),linewidth = 0.5)+ 
-  #geom_line(aes(y=Rt_real,x=x, group = region), color = 'black', linewidth = 0.5, linetype = '41')+
-  #geom_line(aes(y=Rt_back,x=x), color = 'black', linewidth = 0.5, linetype = '11')+
-  geom_hline(yintercept = 1,color = "black", linewidth = 0.25,alpha=0.5)  +
-  theme_classic() +  xlab("Days") + ylab('Reproduction Number') +
-  #facet_rep_wrap(~region, nrow = 3) + 
-  coord_cartesian(ylim = c(0, 5)) +
-  theme(strip.background = element_blank())
+head(data_all_summarise)
+```
 
+```{r}
+# Generate a color palette
+regions <- unique(data_all_summarise$region)
+# Define a set of distinct colors
+colors <- c("red", "blue", "green", "purple", "orange", "brown",
+            "pink", "yellow", "cyan", "magenta")
+colors <- colors[1:length(regions)]
+names(colors) <- regions
+```
 
-library(patchwork)
-p1 + theme(legend.position = 'none') + 
-  p2 + patchwork::plot_layout(nrow = 1)
+```{r fig.width=6.75,dev='png'}
+# Plot expected cases
+plot(
+  x = as.integer(data_all_summarise$x), 
+  y = as.numeric(data_all_summarise$y), 
+  type = "n",
+  xlab = "Days", 
+  ylab = "Cases",
+  main = "Expected Cases"
+)
+
+for (region_i in regions) {
+  region_data <- subset(data_all_summarise, region == region_i)
+  points(x = region_data$x, region_data$y, col = colors[region_i])
+  polygon(
+    c(region_data$x, rev(region_data$x)), 
+    c(region_data$yl, rev(region_data$yh)), 
+    col = adjustcolor(colors[region_i], alpha.f = 0.3), border = NA
+  )
+  lines(region_data$x, region_data$y, col = colors[region_i], lwd = 0.5)
+}
+
+legend("topright",
+       legend = regions,
+       col = colors,
+       lty = rep(1, length(regions)), 
+       cex = 0.8,
+       pt.cex = 1.5 ) # Text size
+```
+
+```{r fig.width=6.75, dev='png'}
+# Plot R(t)
+plot(
+  data_all_summarise$x, data_all_summarise$Rt, 
+  xlab = "Days", ylab = "Reproduction Number",
+  type = "n",
+  main = "R(t)",
+  ylim = c(0, 5)
+)
+for (region_i in regions) {
+  region_data <- subset(data_all_summarise, region == region_i)
+  polygon(
+    c(region_data$x, rev(region_data$x)), 
+    c(region_data$Rtl, rev(region_data$Rth)), 
+    col = adjustcolor(colors[region_i], alpha.f = 0.3), border = NA
+  )
+  lines(region_data$x, region_data$Rt, col = colors[region_i], lwd = 0.5)
+}
+abline(h = 1, col = "black", lwd = 1, lty = 1)
+legend("topright",
+       legend = regions,
+       col = colors,
+       lty = c(1, 1), 
+       cex = 0.8,
+       pt.cex = 1.5 ) # Text size
 
 ```

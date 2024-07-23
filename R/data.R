@@ -95,3 +95,15 @@
 #'
 #'
 "transfer_matrix"
+
+#' sample_m_hier
+#'
+#' "Description in text"
+#'
+#' @format A data.table data frame with X rows and Y variables:
+#' \describe{
+#' \item{Variable}{Description}
+#' }
+#'
+#'
+"sample_m_hier"

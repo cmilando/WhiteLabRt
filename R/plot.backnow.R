@@ -31,6 +31,7 @@
 #' results <- run_backnow(
 #'   line_list,
 #'   sip = sip, chains = 1)
+#' plot(results, "est")
 #'}
 #' @rdname plot.backnow
 #' @import graphics
