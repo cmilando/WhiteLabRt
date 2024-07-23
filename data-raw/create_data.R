@@ -12,17 +12,16 @@ w <- w/sum(w)
 
 Ra <- function(t) (20*cos(t/500) + (0.8*t - 50)^2 - (0.115 * t)^3)/1000 + 0.8
 Rb <- function(t) (30*sin(t/150) + cos(t/20) - (t/50)^2)/8 - 0.006*t
-Rc <- function(t) (30*cos(t/150) + 2*sin(t/20) + 2*(t/50)^2)/20 - 0.005*t
 
 tmax <- 80
 
-Rmatrix = cbind(Ra(1:tmax), Rb(1:tmax), Rc(1:tmax))
+Rmatrix = cbind(Ra(1:tmax), Rb(1:tmax))
 head(Rmatrix)
 
-M <- matrix(NA, nrow = tmax, ncol = 3)
-N <- matrix(NA, nrow = tmax, ncol = 3)
-R_rev <- matrix(NA, nrow = tmax, ncol = 3)
-R_this <- matrix(NA, nrow = tmax, ncol = 3)
+M <- matrix(NA, nrow = tmax, ncol = 2)
+N <- matrix(NA, nrow = tmax, ncol = 2)
+R_rev <- matrix(NA, nrow = tmax, ncol = 2)
+R_this <- matrix(NA, nrow = tmax, ncol = 2)
 
 # initialize
 t = 1
@@ -30,13 +29,16 @@ R_rev[t, ] <- 1e-5
 R_this[t, ] <- 1e-5
 M[t, ] <- 10
 N[t, ] <- 10
-J <- 3
+J <- 2
 S <- length(w)
 
-P <- matrix(c(0.8, 0.2, 0.1,
-              0.15, 0.6, 0.3,
-              0.05, 0.2, 0.6), 3)
+# P <- matrix(c(0.8, 0.2, 0.1,
+#               0.15, 0.6, 0.3,
+#               0.05, 0.2, 0.6), 3)
 
+P <- matrix(c(0.8, 0.4,
+              0.2, 0.6), 2)
+P
 set.seed(123)
 
 for(t in 2:tmax) {
@@ -146,21 +148,11 @@ for(t in 2:tmax) {
 # lines(N[, 1], col = 'red')
 # lines(M[,2], type = 'l', col = 'green')
 # lines(N[, 2], col = 'green')
-# lines(M[,3], type = 'l', col = 'blue')
-# lines(N[,3], type = 'l', col = 'blue')
 #
 # plot(Rmatrix[,1], type = 'l', col = 'red', ylim = c(0, 5))
 # lines(R_this[, 1], col = 'red')
 # lines(Rmatrix[,2], type = 'l', col = 'green')
 # lines(R_this[, 2], col = 'green')
-# lines(Rmatrix[,3], type = 'l', col = 'blue')
-# lines(R_this[,3], type = 'l', col = 'blue')
-
-# decide how many columns to give
-J = 2
-M <- M[, 1:J]
-N <- N[, 1:J]
-P <- P[1:J, 1:J]
 
 # ------------------------------------------------------------------------
 ## NOW EXPORT
@@ -179,11 +171,11 @@ sample_location = rep("Tatooine", nrow(N))
 usethis::use_data(sample_location, overwrite = TRUE)
 
 ## SAMPLE ONSET DATES
-cc = create_caseCounts(date_vec = sample_dates,
+cc = WhiteLabRt::create_caseCounts(date_vec = sample_dates,
                        location_vec = sample_location,
                        cases_vec = sample_cases)
 
-ll = convert_to_linelist(caseCounts = cc, reportF_missP = 0.5)
+ll = WhiteLabRt::convert_to_linelist(caseCounts = cc, reportF_missP = 0.5)
 
 sample_onset_dates = ll$onset_date
 usethis::use_data(sample_onset_dates, overwrite = TRUE)

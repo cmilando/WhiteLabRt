@@ -14,29 +14,38 @@ knitr::opts_chunk$set(
 )
 ```
 
+This R Markdown document walks through the steps for calculating time-varying reproduction number, R(t), assuming a flux of infectors between various adjacent states. This was adapted in STAN from [Zhou and White](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1010434)
+
+### Example of 2 states:
 ```{r setup}
 library(WhiteLabRt)
 ```
 
+**Step 1.** Load data
 ```{r}
 data("sample_multi_site")
 data("transfer_matrix")
 ```
- 
+
+**Step 2.** Create the case matrix of integer values 
 ```{r} 
-Y <- as.matrix(sample_multi_site[, c(2, 3)])
+site_names <- colnames(sample_multi_site)[c(2, 3)]
+Y <- matrix(integer(1), nrow = nrow(sample_multi_site), ncol = 2)
 for(i in 1:nrow(Y)) {
-  for(j in 1:ncol(Y)) {
-    Y[i,j] <- as.integer(Y[i,j])
+  for(j in c(2, 3)) {
+    Y[i,j-1] <- as.integer(sample_multi_site[i,j])
   }
 }
+all(is.integer(Y))
 ```
 
-The serial interval for this **CANNOT** start with a leading 0.
+**Step 3.** Define the serial interval.
+The `si()` function creates a vector of length 14 with shape and rate for a gamma distribution. Note, the serial interval for in this example **CANNOT** start with a leading 0.
 ```{r}
 sip <- si(14, 4.29, 1.18, leading0 = FALSE)
 ```
 
+**Step 4.** Run STAN. The `v2` option indicates an experimental STAN formulation that includes a non-centered parameterization, partial pooling, and an AR1 process. Running this option takes more time, and requires more customization of STAN options. Additional options to STAN can be specified in the last argument (e.g., chains, cores, control).
 ```{r runspatialrt}
 sample_m_hier <- spatialRt(report_dates = sample_multi_site$date,
                  case_matrix = Y,
@@ -44,6 +53,8 @@ sample_m_hier <- spatialRt(report_dates = sample_multi_site$date,
                  v2 = FALSE,
                  sip = sip, chains = 1)
 ```
+**Check output**.
+Check divergences and diagnostics before continuing.
 ```{r}
 rstan::check_divergences(sample_m_hier)
 rstan::check_hmc_diagnostics(sample_m_hier)
@@ -53,7 +64,7 @@ out <- rstan::extract(sample_m_hier)
 # launch_shinystan(m_hier)
 ```
 
-
+Summarize the output data.
 ```{r}
 dim(out$M)
 dim(out$xsigma)
@@ -68,7 +79,7 @@ data_l <- lapply(1:dim(out$M)[3], function(i) {
     Rt     = apply(out$R[, , i], 2, mean),
     Rtl    = apply(out$R[, , i], 2, quantile, probs = 0.025),
     Rth    = apply(out$R[, , i], 2, quantile, probs = 0.975),
-    region = i
+    region = site_names[i] # must be a string
   )
 })
 
@@ -76,8 +87,6 @@ data_all <- do.call(rbind, data_l)
 head(data_all)
 
 # Summarise data
-data_all$region <- paste0('region: ', data_all$region)
-
 data_all_summarise <- aggregate(
   cbind(y, y_real, yl, yh, Rt, Rtl, Rth) ~ x + region,
   data = data_all,
@@ -87,6 +96,7 @@ data_all_summarise <- aggregate(
 head(data_all_summarise)
 ```
 
+Get specific colors for different regions.
 ```{r}
 # Generate a color palette
 regions <- unique(data_all_summarise$region)
@@ -97,6 +107,8 @@ colors <- colors[1:length(regions)]
 names(colors) <- regions
 ```
 
+**Plot expected cases**.
+The lines and shaded confidence intervals represent the expected cases given the calculated R(t) parameters.
 ```{r fig.width=6.75,dev='png'}
 # Plot expected cases
 plot(
@@ -127,6 +139,8 @@ legend("topright",
        pt.cex = 1.5 ) # Text size
 ```
 
+**Plot expected R(t)**.
+The lines and shaded confidence intervals represent the expected R(t) given the data.
 ```{r fig.width=6.75, dev='png'}
 # Plot R(t)
 plot(

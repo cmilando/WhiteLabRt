@@ -1,10 +1,10 @@
 #' Sample dates
 #'
-#' "Description in text"
+#' Sample of case report dates from a single location.
 #'
-#' @format A data.table data frame with X rows and Y variables:
+#' @format A vector of length 80.
 #' \describe{
-#' \item{Variable}{Description}
+#' \item{Dates}{Dates of reported aggregated cases}
 #' }
 #'
 #'
@@ -14,11 +14,11 @@
 
 #' Sample cases
 #'
-#' "Description in text"
+#' Sample of aggregated case counts from a single location.
 #'
-#' @format A data.table data frame with X rows and Y variables:
+#' @format A vector of length 80.
 #' \describe{
-#' \item{Variable}{Description}
+#' \item{Cases}{Numeric}
 #' }
 #'
 #'
@@ -26,35 +26,36 @@
 
 #' Sample location
 #'
-#' "Description in text"
+#' An vector of a single location to accompany `sample_dates` and `sample_cases`.
+#' This is to emphasize that linelist functions are for a single location
 #'
-#' @format A data.table data frame with X rows and Y variables:
+#' @format A vector of length 80.
 #' \describe{
-#' \item{Variable}{Description}
+#' \item{Location}{Character}
 #' }
 #'
 #'
 "sample_location"
 
-#' Sample sample_report_dates
+#' Sample report dates
 #'
-#' "Description in text"
+#' Line-list data, case report dates.
 #'
-#' @format A data.table data frame with X rows and Y variables:
+#' @format A vector of length 6380, one value per case.
 #' \describe{
-#' \item{Variable}{Description}
+#' \item{Date}{Date of report}
 #' }
 #'
 #'
 "sample_report_dates"
 
-#' Sample sample_onset_dates
+#' Sample onset dates
 #'
-#' "Description in text"
+#' Line-list data, onset dates, with some missing.
 #'
-#' @format A data.table data frame with X rows and Y variables:
+#' @format A vector of length 6380, one value per case.
 #' \describe{
-#' \item{Variable}{Description}
+#' \item{Date}{Date of onset}
 #' }
 #'
 #'
@@ -62,23 +63,26 @@
 
 #' Sample multi site
 #'
-#' "Description in text"
+#' A matrix of daily aggregated cases from two sites (Hoth and Tatooine).
 #'
-#' @format A data.table data frame with X rows and Y variables:
+#' @format A data.table data frame with 80 rows and 2 variables:
 #' \describe{
-#' \item{Variable}{Description}
+#' \item{Cases for Site1}{Number of aggregated cases for Site 1}
+#' \item{Cases for Site1}{Number of aggregated cases for Site 2}
 #' }
 #'
 #'
 "sample_multi_site"
 
-#' transfer_matrix
+#' Transfer matrix
 #'
-#' "Description in text"
+#' A matrix of daily transfers between two sites (Hoth and Tatooine).
+#' Each row sums to 1.
 #'
-#' @format A data.table data frame with X rows and Y variables:
+#' @format A data.table data frame with 160 rows and 2 variables:
 #' \describe{
-#' \item{Variable}{Description}
+#' \item{Transfer to Site1}{Fraction of transfer to Site 1}
+#' \item{Transfer to Site2}{Fraction of transfer to Site 2}
 #' }
 #'
 #'

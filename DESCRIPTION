@@ -2,12 +2,14 @@ Package: WhiteLabRt
 Type: Package
 Title: Novel Methods for Reproduction Number Estimation, Backcalculation, and Forecasting
 Version: 1.0
+Date: 2024-07-23
 Authors@R: 
     c(person("Chad", "Milando", , "cmilando@bu.edu", role = c("aut", "cre")),
       person(given = "Tenglong", family = "Li", role = "ctb"),
+      person(given = "Zhenwei", family = "Zhou", role = "ctb"),
       person(given = "Laura", family = "White", role = "ctb"))
 Maintainer: Chad Milando <cmilando@bu.edu>
-Description: A collection of functions related to novel methods for estimating R(t), created by the lab of Professor Laura White.
+Description: A collection of functions related to novel methods for estimating R(t), created by the lab of Professor Laura White. Currently implemented methods include Temporal R(t) estimation - Two-step Bayesian back and nowcasting for linelist data with missing reporting delays, adapted in STAN from Li and White (2021) <doi:10.1371/journal.pcbi.1009210>, and (2) Spatial R(t) estimation - Calculating time-varying reproduction number, R(t), assuming a flux of infectors between various adjacent states, adapted into STAN from Zhou and White (2021) <doi:10.1371/journal.pcbi.1010434>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

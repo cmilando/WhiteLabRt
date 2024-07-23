@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-This R Markdown document walks through the steps imputing a reporting delay distribution from linelist data.
+This R Markdown document walks through the steps for imputing a reporting delay distribution from linelist data with missing disease onset data, adapted in STAN from [Li and White](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009210)
 
 There are two starting points for this vignette: either you have **caseCount** data, which are aggregated case counts by day, or you have **Line-list data** means you have a single row for each case, that has dates for: infection, symptom onset, positive test, and when this was reported to public health agencies.
 
@@ -36,16 +36,15 @@ my_linelist <- create_linelist(report_dates = sample_report_dates,
 head(my_linelist)
 ```
 
-
-**Step 4.** Define the serial interval.
-The `si()` function creates a vector of length 14 with alpha and beta as defined in Li and White, for COVID-19.
+**Step 3.** Define the serial interval.
+The `si()` function creates a vector of length 14 with shape and rate for a gamma distribution. Note, this **has** a leading 0 to indicate no infections on the day of disease onset.
 ```{r serial, fig.width=6.75, dev='png'}
 sip <- si(14, 4.29, 1.18)
 plot(sip, type = 'l')
 ```
 
 **Step 5.** Run the back-calculation algorithm.
-The defaults are 2000 iterations and an R(t) sliding window of 7 days.
+The default is an R(t) sliding window of 7 days. Additional options to STAN can be specified in the last argument (e.g., chains, cores, control).
 ```{r backcalc1}
 out_list_demo <- run_backnow(my_linelist, sip = sip, chains = 1)
 ```

@@ -1,27 +1,31 @@
 #' Run Spatial R(t) estimation and Estimate Reproduction Numbers
 #'
-#' This function performs ...
+#' This function calculates R(t) that arises from transfer of infectors between
+#' different states. There are different flavors of the model, but the base version
+#' calculates a weekly R(t) within each state.
 #'
-#' @param report_dates A data frame ...
-#' @param case_matrix A data frame ...
-#' @param transfer_matrix A data frame ...
-#' @param v2 ...
+#' @param report_dates A vector of reporting dates
+#' @param case_matrix A matrix of cases, defined by integers
+#' @param transfer_matrix A matrix that defines how infectors flow between states.
+#' Each row of the transfer matrix must sum to 1.
+#' @param v2 a flag indicating FALSE if the base algorithm is to be used, and TRUE if
+#' the experimental algorithm is desired. The experimental version contains a
+#' non-centered parameterization, an AR1 process, and partial pooling across states.
 #' @param sip Vector of numeric values specifying the serial interval probabilities.
 #' @param ... Additional arguments passed to rstan::sampling()
-#' @return an object ...
-#'
-#' @details The function ensures ...
+#' @return An rstan object.
 #'
 #' @examples
 #'\donttest{
 #' data("sample_multi_site")
 #' data("transfer_matrix")
-#' Y <- as.matrix(sample_multi_site[, c(2, 3)])
+#' Y <- matrix(integer(1), nrow = nrow(sample_multi_site), ncol = 2)
 #' for(i in 1:nrow(Y)) {
-#'   for(j in 1:ncol(Y)) {
-#'     Y[i,j] <- as.integer(Y[i,j])
+#'   for(j in c(2, 3)) {
+#'     Y[i,j-1] <- as.integer(sample_multi_site[i,j])
 #'   }
 #' }
+#' all(is.integer(Y))
 #' sip <- si(14, 4.29, 1.18, leading0 = FALSE)
 #' sample_m_hier <- spatialRt(report_dates = sample_multi_site$date,
 #' case_matrix = Y,
@@ -35,16 +39,40 @@
 spatialRt <- function(report_dates, case_matrix, transfer_matrix,
                       sip, v2 = FALSE, ...) {
 
+  # ------------------------------------------------------------
+
+  # report dates
+  stopifnot(all(!is.na(as.Date(report_dates))))
+  for(i in 2:length(report_dates)) {
+    if(as.numeric(report_dates[i] - report_dates[i-1]) > 1) stop()
+  }
+
+  # case days
+  stopifnot(all(!is.na(case_matrix)))
+  stopifnot(all(is.integer(case_matrix)))
+  stopifnot(nrow(case_matrix) == length(report_dates))
+
+  # transfer matrix
+  stopifnot(all(!is.na(transfer_matrix)))
+  stopifnot(all(is.numeric(transfer_matrix)))
+  stopifnot(nrow(transfer_matrix) == 2 * length(report_dates))
+  stopifnot(ncol(transfer_matrix) == ncol(case_matrix))
+  for(i in 1:nrow(transfer_matrix)) {
+    if(sum(transfer_matrix[i,]) != 1) stop()
+  }
+
+  # need to do validation on serial interval
+  stopifnot(all(!is.na(sip)))
+  stopifnot(all(is.numeric(sip)))
+  stopifnot(sip[1] != 0)
+
+  # ------------------------------------------------------------
+
   NN <- as.integer(nrow(case_matrix))
 
-  # Need to add validation for this
-  # assumes things are daily
   week_vec = as.integer(ceiling((1:NN)/7))
   n_weeks = as.integer(length(unique(week_vec)))
 
-  # need to do validation on serial interval
-
-  # ------------------------------------------------------------
   # Data list for Stan
   # also need to do data validation here
   stan_data <- list(

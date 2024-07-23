@@ -1,6 +1,16 @@
 #' The 'WhiteLabRt' package.
 #'
-#' @description A DESCRIPTION OF THE PACKAGE
+#' @description A collection of functions related to novel methods for
+#' estimating reproduction number, R(t), created by the lab of
+#' Professor Laura White at Boston University School of Public Health.
+#'
+#' ## Currently implemented methods include (1) Temporal R(t) estimation:
+#' Two-step Bayesian back and nowcasting for linelist data with missing
+#' reporting delays, adapted in STAN from
+#' [Li and White](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009210)
+#' , and (2) Spatial R(t) estimation: Calculating time-varying reproduction number,
+#'  R(t), assuming a flux of infectors between various adjacent states.
+#'  in STAN from [Zhou and White](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1010434)
 #'
 #' @name WhiteLabRt-package
 #' @aliases WhiteLabRt
