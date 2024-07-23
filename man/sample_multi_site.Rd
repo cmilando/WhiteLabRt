@@ -5,15 +5,16 @@
 \alias{sample_multi_site}
 \title{Sample multi site}
 \format{
-A data.table data frame with X rows and Y variables:
+A data.table data frame with 80 rows and 2 variables:
 \describe{
-\item{Variable}{Description}
+\item{Cases for Site1}{Number of aggregated cases for Site 1}
+\item{Cases for Site1}{Number of aggregated cases for Site 2}
 }
 }
 \usage{
 sample_multi_site
 }
 \description{
-"Description in text"
+A matrix of daily aggregated cases from two sites (Hoth and Tatooine).
 }
 \keyword{datasets}

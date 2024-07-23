@@ -5,15 +5,15 @@
 \alias{sample_dates}
 \title{Sample dates}
 \format{
-A data.table data frame with X rows and Y variables:
+A vector of length 80.
 \describe{
-\item{Variable}{Description}
+\item{Dates}{Dates of reported aggregated cases}
 }
 }
 \usage{
 sample_dates
 }
 \description{
-"Description in text"
+Sample of case report dates from a single location.
 }
 \keyword{datasets}

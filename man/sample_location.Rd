@@ -5,15 +5,16 @@
 \alias{sample_location}
 \title{Sample location}
 \format{
-A data.table data frame with X rows and Y variables:
+A vector of length 80.
 \describe{
-\item{Variable}{Description}
+\item{Location}{Character}
 }
 }
 \usage{
 sample_location
 }
 \description{
-"Description in text"
+An vector of a single location to accompany \code{sample_dates} and \code{sample_cases}.
+This is to emphasize that linelist functions are for a single location
 }
 \keyword{datasets}

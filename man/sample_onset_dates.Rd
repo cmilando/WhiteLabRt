@@ -3,17 +3,17 @@
 \docType{data}
 \name{sample_onset_dates}
 \alias{sample_onset_dates}
-\title{Sample sample_onset_dates}
+\title{Sample onset dates}
 \format{
-A data.table data frame with X rows and Y variables:
+A vector of length 6380, one value per case.
 \describe{
-\item{Variable}{Description}
+\item{Date}{Date of onset}
 }
 }
 \usage{
 sample_onset_dates
 }
 \description{
-"Description in text"
+Line-list data, onset dates, with some missing.
 }
 \keyword{datasets}

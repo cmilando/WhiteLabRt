@@ -5,15 +5,15 @@
 \alias{sample_cases}
 \title{Sample cases}
 \format{
-A data.table data frame with X rows and Y variables:
+A vector of length 80.
 \describe{
-\item{Variable}{Description}
+\item{Cases}{Numeric}
 }
 }
 \usage{
 sample_cases
 }
 \description{
-"Description in text"
+Sample of aggregated case counts from a single location.
 }
 \keyword{datasets}

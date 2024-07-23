@@ -3,17 +3,19 @@
 \docType{data}
 \name{transfer_matrix}
 \alias{transfer_matrix}
-\title{transfer_matrix}
+\title{Transfer matrix}
 \format{
-A data.table data frame with X rows and Y variables:
+A data.table data frame with 160 rows and 2 variables:
 \describe{
-\item{Variable}{Description}
+\item{Transfer to Site1}{Fraction of transfer to Site 1}
+\item{Transfer to Site2}{Fraction of transfer to Site 2}
 }
 }
 \usage{
 transfer_matrix
 }
 \description{
-"Description in text"
+A matrix of daily transfers between two sites (Hoth and Tatooine).
+Each row sums to 1.
 }
 \keyword{datasets}

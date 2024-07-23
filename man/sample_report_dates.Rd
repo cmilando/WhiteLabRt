@@ -3,17 +3,17 @@
 \docType{data}
 \name{sample_report_dates}
 \alias{sample_report_dates}
-\title{Sample sample_report_dates}
+\title{Sample report dates}
 \format{
-A data.table data frame with X rows and Y variables:
+A vector of length 6380, one value per case.
 \describe{
-\item{Variable}{Description}
+\item{Date}{Date of report}
 }
 }
 \usage{
 sample_report_dates
 }
 \description{
-"Description in text"
+Line-list data, case report dates.
 }
 \keyword{datasets}
