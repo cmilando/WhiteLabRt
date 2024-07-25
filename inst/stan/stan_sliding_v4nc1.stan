@@ -42,7 +42,7 @@ transformed parameters {
   // KG calls this "avg_step_size"
   // and the logRt_error term is a DIFFERENCE for each region and time
   // KG calls this "It represents the realized difference between each time point."
-  // so why do you need the scaling term?
+  // unsure about the function of the scaling term?
   logR_central[1] = logRt_central_intercept;
   for(w_i in 2:NW) {
     logR_central[w_i] = logR_central[w_i - 1] + exp(sigma_logRt_central)*logRt_central_error[w_i];
@@ -52,7 +52,7 @@ transformed parameters {
   // NB: exp() ensures simga_logRt[j] is always positive
   // so the sigma term is a SCALING term by region
   // and the logRt_error term is a DIFFERENCE for each region and time
-  // so why do you need the scaling term?
+  // unsure about the function of the scaling term?
   
   for(j in 1:J) {
     for(w_i in 1:NW) {
