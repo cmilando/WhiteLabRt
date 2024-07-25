@@ -39,9 +39,9 @@ transformed parameters {
   // CENTRAL RT -- TIME VARYING
   // NB: exp() ensures sigma_logRt_central is always positive
   // so the sigma term is a SCALING term by region,
-  // KG calls this "avg_step_size"
+  // KJ calls this "avg_step_size"
   // and the logRt_error term is a DIFFERENCE for each region and time
-  // KG calls this "It represents the realized difference between each time point."
+  // KJ calls this "It represents the realized difference between each time point."
   // unsure about the function of the scaling term?
   logR_central[1] = logRt_central_intercept;
   for(w_i in 2:NW) {
