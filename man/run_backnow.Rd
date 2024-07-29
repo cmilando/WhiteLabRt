@@ -13,8 +13,7 @@ run_backnow(
 )
 }
 \arguments{
-\item{input}{A data frame or list that includes epidemic data with either class 'caseCounts'
-or 'lineList'. The input type determines initial processing steps.}
+\item{input}{A 'lineList' data.frame from \code{create_linelist} or \code{convert_to_linelist}.}
 
 \item{sip}{Vector of numeric values specifying the serial interval probabilities.}
 

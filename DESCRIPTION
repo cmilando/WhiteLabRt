@@ -1,6 +1,6 @@
 Package: WhiteLabRt
 Type: Package
-Title: Novel Methods for Reproduction Number Estimation, Backcalculation, and Forecasting
+Title: Novel Methods for Reproduction Number Estimation, Back-Calculation, and Forecasting
 Version: 1.0
 Date: 2024-07-23
 Authors@R: 
@@ -9,7 +9,12 @@ Authors@R:
       person(given = "Zhenwei", family = "Zhou", role = "ctb"),
       person(given = "Laura", family = "White", role = "ctb"))
 Maintainer: Chad Milando <cmilando@bu.edu>
-Description: A collection of functions related to novel methods for estimating R(t), created by the lab of Professor Laura White. Currently implemented methods include Temporal R(t) estimation - Two-step Bayesian back and nowcasting for linelist data with missing reporting delays, adapted in STAN from Li and White (2021) <doi:10.1371/journal.pcbi.1009210>, and (2) Spatial R(t) estimation - Calculating time-varying reproduction number, R(t), assuming a flux of infectors between various adjacent states, adapted into STAN from Zhou and White (2021) <doi:10.1371/journal.pcbi.1010434>.
+Description: A collection of functions related to novel methods for estimating R(t), 
+  created by the lab of Professor Laura White. Currently implemented methods include 
+  two-step Bayesian back-calculation and now-casting for line-list data with missing reporting delays, 
+  adapted in 'STAN' from Li (2021) <doi:10.1371/journal.pcbi.1009210>, 
+  and calculation of time-varying reproduction number assuming a flux between various adjacent states, adapted into 'STAN' from 
+  Zhou (2021) <doi:10.1371/journal.pcbi.1010434>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -33,8 +38,7 @@ LinkingTo:
 SystemRequirements: GNU make
 Suggests: 
     knitr,
-    rmarkdown,
-    spelling
+    rmarkdown
 Language: en-US
 LazyData: true
 VignetteBuilder: knitr

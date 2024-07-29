@@ -46,7 +46,7 @@ sip <- si(14, 4.29, 1.18, leading0 = FALSE)
 ```
 
 **Step 4.** Run STAN. The `v2` option indicates an experimental STAN formulation that includes a non-centered parameterization, partial pooling, and an AR1 process. Running this option takes more time, and requires more customization of STAN options. Additional options to STAN can be specified in the last argument (e.g., chains, cores, control).
-```{r runspatialrt}
+```{r runspatialrt,eval=F}
 sample_m_hier <- spatialRt(report_dates = sample_multi_site$date,
                  case_matrix = Y,
                  transfer_matrix = transfer_matrix,
@@ -56,6 +56,7 @@ sample_m_hier <- spatialRt(report_dates = sample_multi_site$date,
 **Check output**.
 Check divergences and diagnostics before continuing.
 ```{r}
+data("sample_m_hier")
 rstan::check_divergences(sample_m_hier)
 rstan::check_hmc_diagnostics(sample_m_hier)
 

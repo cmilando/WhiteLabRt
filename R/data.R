@@ -37,6 +37,30 @@
 #'
 "sample_location"
 
+#' Sample hierachical model output
+#'
+#' an example `rstan` output object from spatialrt()
+#'
+#' @format An rstan object
+#' \describe{
+#' \item{list}{list}
+#' }
+#'
+#'
+"sample_m_hier"
+
+#' Sample back-calculation output
+#'
+#' an example `backnow` output object from run_backnow()
+#'
+#' @format An backnow object
+#' \describe{
+#' \item{list}{list}
+#' }
+#'
+#'
+"out_list_demo"
+
 #' Sample report dates
 #'
 #' Line-list data, case report dates.

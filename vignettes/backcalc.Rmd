@@ -45,13 +45,14 @@ plot(sip, type = 'l')
 
 **Step 5.** Run the back-calculation algorithm.
 The default is an R(t) sliding window of 7 days. Additional options to STAN can be specified in the last argument (e.g., chains, cores, control).
-```{r backcalc1}
+```{r backcalc1,eval=F}
 out_list_demo <- run_backnow(my_linelist, sip = sip, chains = 1)
 ```
 
 **Plot outputs**.
 The points are aggregated reported cases, and the red line (and shaded confidence interval) represent the back-calculated case onsets that lead to the reported data.
 ```{r plot1,fig.width=6.75,dev='png'}
+data("out_list_demo")
 plot(out_list_demo, "est")
 ```
 

@@ -4,8 +4,7 @@
 #' estimating the time distribution of infections and reproduction numbers (r(t)).
 #' It utilizes extensive input checks and parameter validation to ensure robust model execution.
 #'
-#' @param input A data frame or list that includes epidemic data with either class 'caseCounts'
-#'              or 'lineList'. The input type determines initial processing steps.
+#' @param input A 'lineList' data.frame from `create_linelist` or `convert_to_linelist`.
 #' @param sip Vector of numeric values specifying the serial interval probabilities.
 #' @param NB_maxdelay Integer, the maximum delay for the negative binomial distribution used in modeling.
 #' @param window_size Integer, the number of days of the R(t) averaging window.
