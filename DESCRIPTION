@@ -1,7 +1,7 @@
 Package: WhiteLabRt
 Type: Package
 Title: Novel Methods for Reproduction Number Estimation, Back-Calculation, and Forecasting
-Version: 1.0
+Version: 1.01
 Date: 2024-07-23
 Authors@R: 
     c(person("Chad", "Milando", , "cmilando@bu.edu", role = c("aut", "cre")),
