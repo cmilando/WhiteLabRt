@@ -55,7 +55,7 @@ spatialRt <- function(report_dates, case_matrix, transfer_matrix,
   # transfer matrix
   stopifnot(all(!is.na(transfer_matrix)))
   stopifnot(all(is.numeric(transfer_matrix)))
-  stopifnot(nrow(transfer_matrix) == 2 * length(report_dates))
+  stopifnot(nrow(transfer_matrix) == ncol(case_matrix) * length(report_dates))
   stopifnot(ncol(transfer_matrix) == ncol(case_matrix))
   for(i in 1:nrow(transfer_matrix)) {
     if(sum(transfer_matrix[i,]) != 1) stop()
