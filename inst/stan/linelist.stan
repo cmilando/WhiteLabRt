@@ -71,16 +71,16 @@ data {
   // OBSERVED
   int<lower=1>     N_obs;           // Number of individuals
   matrix[N_obs, J] dum_obs;         // matrix of indicator values
-  int              Y_obs[N_obs];    // observed reporting delays
-  int              ReportOnset[N_obs]; // which days did these occur on ...
+  array[N_obs] int Y_obs;    // observed reporting delays
+  array[N_obs] int ReportOnset; // which days did these occur on ...
 
   // MISSING
   int<lower=1>      N_miss;        // Number of individuals with missing data
   matrix[N_miss, J] dum_miss;      // matrix of indicator values
-  int               ReportDays[N_miss]; // which days were things reported on
+  array[N_miss] int ReportDays; // which days were things reported on
 
   // Tells you the true order of cases
-  int  missvector[N_obs + N_miss];
+  array[N_obs + N_miss] int missvector;
 }
 
 

@@ -1,9 +1,9 @@
 data {
   int<lower=1> N;          // the number of observations. 
   int<lower=1> NW;         // the number of weeks. 
-  int week_vec[N];         // the week vector 
+  array[N] int week_vec;         // the week vector 
   int<lower=1> J;          // the number of regions
-  int<lower=0> Y[N,J];     // observed cases. 
+  array[N,J] int<lower=0> Y;     // observed cases. 
   matrix[N*J,J] P;         // transfer matrix, changes with time
   int<lower=1> S;          // length of serial interval
   vector[S] W;             // serial interval
